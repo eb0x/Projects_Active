@@ -91,7 +91,7 @@ class Data_Clean:
         
 
 if __name__ == "__main__":
-    dbfile = 'CM0645.sqlite'
+    dbfile = S.dbfile
     DB = Db(basedir + dbfile)
     DC = Data_Clean(DB)
     DC.getProjectDataFrames()

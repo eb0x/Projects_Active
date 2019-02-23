@@ -12,18 +12,12 @@ import textacy
 import spacy
 nlp = spacy.load('en')
 
+import Settings as S                    # pathnames
 from CM0645db import Db
 
-
-#if changing the folders, please comment out these lines and add your own
-# it is easier then to swap hosts
-#basedir = "/Users/jeremyellman/Documents/Projects_Active/CM0645_15_16/"
-basedir = "/home/jeremy/Projects-Active/CM0645"
-
-#basedir = '/home/izje1/Documents/Projects_Active/' # Northumbria verson
-dbfile = basedir + 'CM0645.sqlite'
-
-outdir = basedir + 'CM0645_Projects_16_17/ptxts/'
+basedir = S.basedir
+dbfile = basedir / S.dbfile
+outdir = basedir / S.cohortdir_16_17 / S.ptxts
 
 class Readability_Stats:
     mybase = ""
@@ -38,7 +32,7 @@ class Readability_Stats:
 #Read the filename 
 #   
     def process_file(self, filename):
-        fname = self.mybase  + filename
+        fname = self.mybase / filename
         with open(fname, 'r') as f:
             self.data = f.read()
         print("File: %s has %d lines" %(fname, len(self.data)))
@@ -74,7 +68,7 @@ class Readability_Stats:
         
 
 if __name__ == "__main__":
-    dbfile = 'CM0645.sqlite'
+    dbfile = S.dbfile
     DB = Db(basedir + dbfile)
     readability1 = Readability_Stats(outdir, DB)
     readability1.Describe()
@@ -85,11 +79,11 @@ if __name__ == "__main__":
         readability1.process_content(file1)
         readability1.Describe()
     else:
-        Readability1 = Readability_Stats(basedir + 'CM0645_Projects_15_16/' + 'ptxts/', DB)   #tag the extracted texts
+        Readability1 = Readability_Stats(basedir + S.cohortdir_15_16 + S.ptxts, DB)   #tag the extracted texts
         Readability1.process_Dir()
-        # Readability2 = Readability_Stats(basedir + 'CM0645_Projects_16_17/' + 'ptxts/')   #tag the extracted texts
+        # Readability2 = Readability_Stats(basedir + S.cohortdir_16_17 + S.ptxts)   #tag the extracted texts
         # Readability2.process_Dir()
-        # Readability3 = Readability_Stats(basedir + 'CM0645_Projects_17_18/' + 'ptxts/')   #tag the extracted texts
+        # Readability3 = Readability_Stats(basedir + S.cohortdir_17_18 + S.ptxts)   #tag the extracted texts
         # Readability3.process_Dir()
 
 

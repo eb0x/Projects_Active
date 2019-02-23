@@ -1,14 +1,12 @@
-
 from os import listdir
 import sqlite3
 from sqlite3 import Error
 import csv
 import pandas as pd
 
-basedir = '/home/jeremy/Projects-Active/'
-#basedir = '/home/izje1/Documents/Projects_Active/'
-dbfile = basedir + 'CM0645.sqlite'
-table_name = 'projects'
+import Settings as S
+
+#table_name = 'projects'
 
 #Many Operations will be expensive, so store any values in the DB to avoid re-computing
 #the idea is that the vectors input to the deep learning system will be extracted from 
@@ -120,7 +118,7 @@ class Db:
     
     def __init__(self, db_file):
         try:
-            conn = sqlite3.connect(db_file)
+            conn = sqlite3.connect(str(db_file))
             print('SQLite Version OK', sqlite3.version)
             self.conn = conn
         except Error as e:
@@ -144,7 +142,7 @@ class Db:
         try:
             Report_Percent = (Report_Mark * 100.0) /Report_Max
             cursor = self.conn.cursor()
-            cursor.execute('''INSERT INTO projects(uid, first_name, last_name, cohort, filename, Report_Mark, Report_Max, Report_Percent)
+            cursor.execute('''INSERT OR REPLACE INTO projects(uid, first_name, last_name, cohort, filename, Report_Mark, Report_Max, Report_Percent)
                   VALUES(?,?,?,?,?,?,?,?)''', (uid, first_name, last_name, cohort, filename, Report_Mark, Report_Max, Report_Percent))
             self.conn.commit()
         except sqlite3.Error as e:
@@ -158,8 +156,8 @@ class Db:
     def add_uids(self, uids_data):
         try:
             cursor = self.conn.cursor()
-            cursor.execute("BEGIN TRANSACTION;")
-            sql = '''INSERT INTO projects(uid, first_name, last_name, cohort, filename, Report_Mark, Report_Max, Report_Percent)
+#            cursor.execute("BEGIN TRANSACTION;")
+            sql = '''INSERT OR REPLACE INTO projects(uid, first_name, last_name, cohort, filename, Report_Mark, Report_Max, Report_Percent)
                   VALUES(?,?,?,?,?,?,?,?)'''
             cursor.executemany(sql, uids_data)
             cursor.execute("COMMIT;")
@@ -173,7 +171,7 @@ class Db:
     def add_file(self, filename, first_name, last_name, cohort,  raw_lines, extracted_lines):
         try:
             cursor = self.conn.cursor()
-            cursor.execute('''INSERT INTO raw(filename, first_name, last_name, cohort,  raw_lines, extracted_lines)
+            cursor.execute('''INSERT OR REPLACE INTO raw(filename, first_name, last_name, cohort,  raw_lines, extracted_lines)
                   VALUES(?,?,?,?,?,?)''', (filename, first_name, last_name, cohort,  raw_lines, extracted_lines))
             self.conn.commit()
         except sqlite3.Error as e:
@@ -187,8 +185,8 @@ class Db:
     def add_files(self, files_data):
         try:
             cursor = self.conn.cursor()
-            cursor.execute("BEGIN TRANSACTION;")
-            sql = '''INSERT INTO raw(filename, first_name, last_name, cohort,  raw_lines, extracted_lines) VALUES(?,?,?,?,?,?)'''
+#            cursor.execute("BEGIN TRANSACTION;")
+            sql = '''INSERT OR REPLACE INTO raw(filename, first_name, last_name, cohort,  raw_lines, extracted_lines) VALUES(?,?,?,?,?,?)'''
             cursor.executemany(sql, files_data)
             cursor.execute("COMMIT;")
           #  self.conn.commit()
@@ -251,7 +249,6 @@ class Db:
         
 
     def ShowTables(self):
-       # con = sql.connect(r'/Users/linnk/Desktop/Results/GData.db')
         cur = self.conn.cursor() 
         cur.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;")
         available_table=(cur.fetchall())
@@ -324,20 +321,23 @@ class Db:
 
 
 if __name__ == '__main__':
-    DB = Db(dbfile)
-    DB.ShowTables()
-    DB.values_in_col('projects')
-    DB.values_in_col('raw')
-    DB.getCols()
-    DB.SaveCSV('projects')
-    DB.SaveCSV('raw')
+    try:
+        DB = Db(str(S.dbfile))
+        DB.ShowTables()
+        DB.values_in_col('projects')
+        DB.values_in_col('raw')
+        DB.getCols('projects')
+        DB.SaveCSV('projects')
+        DB.SaveCSV('raw')
+    except Exception as e:
+        print("Exception in CM0645 main {}".format(e))
     resetting =   True # False # 
     if resetting:
         DB.initialize()
     else:
         DB.index_filenames()
-    # DB.ShowStatus('projects')
-    # DB.ShowStatus('raw')
+    DB.ShowStatus('projects')
+    DB.ShowStatus('raw')
     DB.getDF('projects')
     print(DB.FindLoadedCohortsRaw('raw'))
     DB.df.describe()

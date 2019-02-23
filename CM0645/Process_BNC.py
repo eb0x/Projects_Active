@@ -33,7 +33,7 @@ class Process_BNC:
             self.word_dict = {}
             self.process_all()
         else:
-            self.loadBNC("BNC.pickle")
+            self.loadBNC(S.BNCfile)
 
 
     def process_all(self):
@@ -93,6 +93,6 @@ class Process_BNC:
 
 if __name__ == "__main__":
     BNC = Process_BNC("/mnt/sdc3/home/BNC_XML/PlainTexts/", reprocess=False)
-#    BNC.saveBNC("BNC.pickle")
+#    BNC.saveBNC(S.BNCfile)
     BNC.describe()
     BNC.CalcIDF()

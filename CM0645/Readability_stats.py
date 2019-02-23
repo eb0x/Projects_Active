@@ -85,22 +85,22 @@ class Readability_Stats:
         print(self.onlyfiles)
         
 if __name__ == "__main__":
-    dbfile = 'CM0645.sqlite'
+    dbfile = S.dbfile
     DB = Db(basedir + dbfile)
     DB.index_filenames()
     basedir += "CM0645/"
     JustOne = False #True #
     if JustOne:
-        Readability0 = Readability_Stats(basedir + 'CM0645_Projects_15_16/' + 'ptxts/')   #tag the extracted texts
+        Readability0 = Readability_Stats(basedir + S.cohortdir_15_16 + S.ptxts)   #tag the extracted texts
         file1 = Readability0.onlyfiles[12]
         Readability0.process_file(file1)
         Readability0.process_content(file1, outdir + file1)
     else:
-        Readability1 = Readability_Stats(basedir + 'CM0645_Projects_15_16/' + 'ptxts/')   #tag the extracted texts
+        Readability1 = Readability_Stats(basedir + S.cohortdir_15_16 + S.ptxts)   #tag the extracted texts
         Readability1.process_Dir()
-        Readability2 = Readability_Stats(basedir + 'CM0645_Projects_16_17/' + 'ptxts/')   #tag the extracted texts
+        Readability2 = Readability_Stats(basedir + S.cohortdir_16_17 + S.ptxts)   #tag the extracted texts
         Readability2.process_Dir()
-        Readability3 = Readability_Stats(basedir + 'CM0645_Projects_17_18/' + 'ptxts/')   #tag the extracted texts
+        Readability3 = Readability_Stats(basedir + S.cohortdir_17_18 + S.ptxts)   #tag the extracted texts
         Readability3.process_Dir()
 
 

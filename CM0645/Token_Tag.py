@@ -15,21 +15,17 @@ from nltk.tag import pos_tag_sents, pos_tag
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 
+import Settings as S                    # pathnames
 from CM0645db import Db
 
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 translator = str.maketrans(string.punctuation, ' '*len(string.punctuation)) #map punctuation to space
 stemmer = SnowballStemmer("english")
 
-#if changing the folders, please comment out these lines and add your own
-# it is easier then to swap hosts
-#only last one counts
-#basedir = "/Users/jeremyellman/Documents/Projects_Active/CM0645_15_16/"
-#basedir = "/home/izje1/Documents/Projects_Active/CM0645/"
-basedir = "/home/jeremy/Projects-Active/"
+basedir = str(S.basedir)
 
 outdir = basedir + 'taggedtxts/'
-BNCfile = "BNC.pickle"
+BNCfile = S.BNCfile
 
 
 #utility function from SO gives n sized chunks of list l
@@ -266,22 +262,22 @@ class TaggedText:
     
         
 if __name__ == "__main__":
-    dbfile = 'CM0645.sqlite'
+    dbfile = S.dbfile
    
     DB = Db(basedir + 'CM0465/' + dbfile)
     JustOne =  False  #True 
     if JustOne:
-        tagger0 = TaggedText(basedir + 'CM0645_Projects_16_17/' + 'ptxts/', DB)   #tag the extracted texts
+        tagger0 = TaggedText(basedir + S.cohortdir_16_17 + S.ptxts, DB)   #tag the extracted texts
         file1 = tagger0.onlyfiles[165]
         tagger0.process_file(file1)
         tagger0.process_content(file1, outdir + file1)
     else:
-        tagger1 = TaggedText(basedir + 'CM0645_Projects_15_16/' + 'ptxts/', DB)   #tag the extracted texts
-        tagger1.process_Dir(basedir + 'CM0645_Projects_15_16/' + 'taggedtxts/', DB)
-        tagger2 = TaggedText(basedir + 'CM0645_Projects_16_17/' + 'ptxts/', DB)   #tag the extracted texts
-        tagger2.process_Dir(basedir + 'CM0645_Projects_16_17/' + 'taggedtxts/', DB)
-        tagger3 = TaggedText(basedir + 'CM0645_Projects_17_18/' + 'ptxts/', DB)   #tag the extracted texts
-        tagger3.process_Dir(basedir + 'CM0645_Projects_17_18/' + 'taggedtxts/')
+        tagger1 = TaggedText(basedir + S.cohortdir_15_16 + S.ptxts, DB)   #tag the extracted texts
+        tagger1.process_Dir(basedir + S.cohortdir_15_16 + 'taggedtxts/', DB)
+        tagger2 = TaggedText(basedir + S.cohortdir_16_17 + S.ptxts, DB)   #tag the extracted texts
+        tagger2.process_Dir(basedir + S.cohortdir_16_17 + 'taggedtxts/', DB)
+        tagger3 = TaggedText(basedir + S.cohortdir_17_18 + S.ptxts, DB)   #tag the extracted texts
+        tagger3.process_Dir(basedir + S.cohortdir_17_18 + 'taggedtxts/')
     #tagger1.Describe()
 
 
