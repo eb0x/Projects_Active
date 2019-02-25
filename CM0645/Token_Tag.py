@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from os import listdir
-from os.path import isfile, join
+#from os import listdir
+#from os.path import isfile, join
+from pathlib import Path
 import re
 import sys
 import string
@@ -24,7 +25,6 @@ stemmer = SnowballStemmer("english")
 
 basedir = str(S.basedir)
 
-outdir = basedir + 'taggedtxts/'
 BNCfile = S.BNCfile
 
 
@@ -44,13 +44,14 @@ class TaggedText:
 
     
     def __init__(self, mypath, Db):
-        self.onlyfiles = [f for f in sorted(listdir(mypath)) if isfile(join(mypath, f))]
+        p = Path(mypath)
+        self.onlyfiles = sorted([f for f in p.iterdir() if f.is_file()])
         self.mybase = mypath
         self.DB = Db
         self.ptag = re.compile('^[A-Z]+$')
-        with open(basedir + "myAWLDict.txt", "rb") as myFile:    #load Academic Word List
+        with open(S.basedir / S.datadir / "myAWLDict.txt", "rb") as myFile:    #load Academic Word List
             self.AWLDictionary = pickle.load(myFile)
-        with open(basedir + "myCSAWLDict.txt", "rb") as myFile2:
+        with open(S.basedir / S.datadir / "myCSAWLDict.txt", "rb") as myFile2:
             self.CSAWLstems = pickle.load(myFile2)
         self.stopWords = set(stopwords.words('english'))
         self.prepare_BNC()
@@ -59,10 +60,7 @@ class TaggedText:
 #prepare the BNC by loading the Pickle of raw frequences then 
 #group into kilo-words. There are 822 of these.
     def prepare_BNC(self):
-        fn = join(basedir, BNCfile)
-        print("BNC File: ", fn)
-
-        BNCdict =  pickle.load(open( fn, "rb" ))
+        BNCdict =  pickle.load(open( S.basedir / S.datadir / S.BNCfile, "rb" ))
         self.BNC = BNCdict
         #Sort by Frequency
         BNC_bv = sorted(BNCdict .items(), key=lambda kv: kv[1])
@@ -91,16 +89,16 @@ class TaggedText:
 #Read the filename content into one variable self.content
 #   
     def process_file(self, filename):
-        fname = self.mybase  + filename
+#        fname = self.mybase  + filename
         self.token_count = 0
         self.sentences = 0
         self.word_dict = {}
         self.novel_words = {}
 
-        with open(fname, 'r') as f:
+        with open(filename, 'r', encoding='utf8') as f:
             content = f.read()
             self.sent_tokenize_list = sent_tokenize(content )   #split into sentences         
-            self.record_basic_stats(filename, self.sent_tokenize_list)
+            self.record_basic_stats(filename.name, self.sent_tokenize_list)
             
 #Create dictionary of Basic statistics from NLTK
 # then add these to the SQLite using addTextStats
@@ -164,7 +162,7 @@ class TaggedText:
 #         trying to lose none text lines like headers.
 #
     def process_content(self, filename, outfilename):
-        with open(outfilename, 'w') as the_file:
+        with open(outfilename, 'w', encoding='utf8') as the_file:
             wr = csv.writer(the_file)
             self.process_PoS(filename, wr)
 
@@ -250,7 +248,7 @@ class TaggedText:
     def process_Dir(self, outdir):
         for file in self.onlyfiles:
             try:
-                if not self.DB.check_processed(file, 'NLTK_sentences'): # expensive op --don't repeat if done
+                if not self.DB.check_processed(file.name, 'NLTK_sentences'): # expensive op --don't repeat if done
                     self.process_file(file)
                     self.process_content(file, outdir + file)
             except Exception as e:
@@ -264,20 +262,20 @@ class TaggedText:
 if __name__ == "__main__":
     dbfile = S.dbfile
    
-    DB = Db(basedir + 'CM0465/' + dbfile)
-    JustOne =  False  #True 
+    DB = Db(S.basedir / S.dbfile)
+    JustOne =  True # True #False
     if JustOne:
-        tagger0 = TaggedText(basedir + S.cohortdir_16_17 + S.ptxts, DB)   #tag the extracted texts
+        tagger0 = TaggedText(S.basedir /  S.cohortdir_16_17 / S.ptxts, DB)   #tag the extracted texts
         file1 = tagger0.onlyfiles[165]
         tagger0.process_file(file1)
-        tagger0.process_content(file1, outdir + file1)
+        tagger0.process_content(file1, S.basedir / S.cohortdir_17_18 / S.ptxts / file1)
     else:
-        tagger1 = TaggedText(basedir + S.cohortdir_15_16 + S.ptxts, DB)   #tag the extracted texts
-        tagger1.process_Dir(basedir + S.cohortdir_15_16 + 'taggedtxts/', DB)
-        tagger2 = TaggedText(basedir + S.cohortdir_16_17 + S.ptxts, DB)   #tag the extracted texts
-        tagger2.process_Dir(basedir + S.cohortdir_16_17 + 'taggedtxts/', DB)
-        tagger3 = TaggedText(basedir + S.cohortdir_17_18 + S.ptxts, DB)   #tag the extracted texts
-        tagger3.process_Dir(basedir + S.cohortdir_17_18 + 'taggedtxts/')
+        tagger1 = TaggedText(S.basedir / S.cohortdir_15_16 / S.ptxts, DB)   #tag the extracted texts
+        tagger1.process_Dir(S.basedir / S.cohortdir_15_16 / S.taggedtxts)
+        tagger2 = TaggedText(S.basedir / S.cohortdir_16_17 / S.ptxts, DB)   #tag the extracted texts
+        tagger2.process_Dir(S.basedir / S.cohortdir_16_17 / S.taggedtxts)
+        tagger3 = TaggedText(S.basedir / S.cohortdir_17_18 / S.ptxts, DB)   #tag the extracted texts
+        tagger3.process_Dir(S.basedir / S.cohortdir_17_18 / S.taggedtxts)
     #tagger1.Describe()
 
 

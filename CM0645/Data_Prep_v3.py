@@ -1,5 +1,6 @@
 from os import listdir
-from os.path import isfile, join
+#from os.path import isfile, join
+from pathlib import Path         # python 3 way
 import pandas as pd
 import numpy as np
 import math
@@ -7,7 +8,7 @@ import re
 
 import Settings as S                    # pathnames
 from CM0645db import Db
-import extract_parts as extract_m # re based text extractor
+import extract_parts_v2 as extract_m # re based text extractor
 
 #The main point of this class is to reconcile the files from the eLP (if any)
 #with the marks and store an entry in the DB if both found
@@ -31,7 +32,8 @@ class Cohort:
 #need to later equate these to marks
 #
     def get_files(self):
-        onlyfiles = [f for f in listdir(self.txtdir)]
+        p = Path(self.txtdir)
+        onlyfiles = sorted([f for f in p.iterdir() if f.is_file()])
         file_details = dict()
         for file in onlyfiles:
             (firstname, surname) = extract_m.extract_student_name(file) 
@@ -67,7 +69,7 @@ class Cohort:
                     if uid:
                         #db.add_uid(uid, firstnames, surname, self.label, filename, row['Report_Mark'], row['Report_Max'])
                         Report_Percent = (row['Report_Mark'] * 100.0) /row['Report_Max']
-                        uids_data.append([uid, firstnames, surname, self.label, filename, row['Report_Mark'], row['Report_Max'],Report_Percent ])
+                        uids_data.append([uid, firstnames, surname, self.label, filename.name, row['Report_Mark'], row['Report_Max'],Report_Percent ])
                     find_count += 1
             else:
                 pass
