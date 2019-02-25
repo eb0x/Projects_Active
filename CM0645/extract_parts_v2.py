@@ -74,7 +74,7 @@ class PlainText:
                         
                 if found_abstract:
                     if re.search(r'[\d\.\)\s]*(References|Bibliography|Reference List)\:*$', line.strip(), re.IGNORECASE) and line_count > 400:
-                        found_references = True #Not interested in text after here
+ #                       found_references = True #Not interested in text after here
                         if self.debug: 
                             print("---%s---" %(line.strip()))
                         break
@@ -86,7 +86,7 @@ class PlainText:
                     index_line_p = re.search(r'\W+\d\d?\s*$', line.rstrip()) # ToC line
     
                     if not index_line_p:
-                        blankline = re.match('^\s*[\d\.]+\s*$', line)  # page numbering
+                        blankline = re.match(r'^\s*[\d\.]+\s*$', line)  # page numbering
                         if not blankline:
                             if not line in ['\n', '\r\n']:
                                 the_file.write(line + ' ')
@@ -119,7 +119,7 @@ class PlainText:
                 self.process_file(afile)
                 (line_count, lines_written ) = self.process_content(outdir / afile)
                 #self.DB.add_file(afile,  firstname, surname, cohort,  line_count, lines_written )
-                files_data.append([afile.stem,  firstname, surname, cohort,  line_count, lines_written ])
+                files_data.append([afile.name,  firstname, surname, cohort,  line_count, lines_written ])
             except Exception as e:
                         print("Extract parts: Process Error in {}, reason: {}".format(afile, e))
         print("Length File Data {}".format(len(files_data)))

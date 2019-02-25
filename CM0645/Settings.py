@@ -21,4 +21,6 @@ txts='txts/'
 ptxts = 'ptxts/'
 taggedtxts = 'taggedtxts/'
 
+datadir = 'data/'
+
 BNCfile = "BNC.pickle"

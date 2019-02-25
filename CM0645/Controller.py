@@ -13,7 +13,7 @@ import pandas as pd
 import numpy as np
 
 from os import listdir
-from os.path import isfile, join # the old way to do paths
+#from os.path import isfile, join # the old way to do paths
 from pathlib import Path         # python 3 way
 from sqlite3 import Error
 
@@ -31,13 +31,8 @@ import New_Readability_stats as Stats_m # Text Statistics module
 import gui_01 as gui                    # gui Module
 
 
-basedir = '/home/jeremy/Projects-Active/' # home version
-#basedir = '/home/izje1/Documents/Projects_Active/' # Northumbria verson
-
 dbfile = S.basedir / S.dbfile
-
 BNCfile = S.BNCfile
-
 
 
 def libcheck(lib):
@@ -133,7 +128,7 @@ class Controller:
     
     def __init__(self, dbfile):
         self.cohorts = []
-        self.basedir = str(S.basedir)
+        self.basedir = S.basedir
         self.DB = dbfile
         self.dbfile = dbfile
 
@@ -191,12 +186,8 @@ class Controller:
         else:
             print("Cohort Label {} not recognised". format(label))
             unrecognised = True
-        if (not unrecognised):
-            txtdir = self.basedir / cohortdir / S.txts
-            ptxtdir = self.basedir / cohortdir / S.ptxts # directory of processed texts
-            taggeddir = self.basedir / cohortdir / 'taggedtxts/'
-            marksf = self.basedir / cohortdir / marksfile
-            cohort = DP_m.Cohort(label, marksf, txtdir, ptxtdir, taggeddir)
+        if not unrecognised:
+            cohort = DP_m.Cohort(label, cohortdir, marksfile)
             self.cohorts.append(cohort)
             return cohort
         else:

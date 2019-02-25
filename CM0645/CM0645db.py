@@ -1,4 +1,4 @@
-from os import listdir
+#from os import listdir
 import sqlite3
 from sqlite3 import Error
 import csv
@@ -203,7 +203,7 @@ class Db:
         cols = [key + "=" + str(value) + "," for (key, value) in TS_dict.items()]
         sql = 'UPDATE projects SET ' + ' '.join(map(str, cols))
         sql2 = sql[:-1] + ' WHERE filename=?'
-#        print("::Query: ", sql2)
+        print("addTextStats::Query: ", sql2)
         try:
             cursor = self.conn.cursor()
             cursor.execute(sql2, (filename,))
@@ -230,13 +230,13 @@ class Db:
             print("Skipping  Filename {} as {} in DB".format(filename, column))
             Found = True
         else:
-            print("Column {} for Filename {} is not in DB {}".format(column, filename, result[0]))
+            print("Column {} for Filename {} is not in DB".format(column, filename))
             Found = False
         return Found
     
     
     def logerror(self, msg):
-        print("Error: ", msg)
+        print("Error (DB): ", msg)
 
     def index_filenames(self):
         cur = self.conn.cursor()
@@ -305,7 +305,7 @@ class Db:
 
 #Get the pandas Dataframe
     def getDF(self, table, get_again = False):
-#        if self.df.emptry() or get_again:
+#        if self.df.empty() or get_again:
         cursor = self.conn.cursor() 
         self.df = pd.read_sql_query(f"SELECT * FROM {table}", self.conn)
         return self.df
@@ -331,7 +331,7 @@ if __name__ == '__main__':
         DB.SaveCSV('raw')
     except Exception as e:
         print("Exception in CM0645 main {}".format(e))
-    resetting =   True # False # 
+    resetting = False  # False # True 
     if resetting:
         DB.initialize()
     else:
