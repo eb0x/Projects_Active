@@ -250,7 +250,7 @@ class TaggedText:
             try:
                 if not self.DB.check_processed(file.name, 'NLTK_sentences'): # expensive op --don't repeat if done
                     self.process_file(file)
-                    self.process_content(file, outdir + file)
+                    self.process_content(file, outdir / file)
             except Exception as e:
                         print("Token Tag: process_Dir: {} file: {}".format(e, file))
         
@@ -263,9 +263,9 @@ if __name__ == "__main__":
     dbfile = S.dbfile
    
     DB = Db(S.basedir / S.dbfile)
-    JustOne =  True # True #False
+    JustOne =  False # True #False
     if JustOne:
-        tagger0 = TaggedText(S.basedir /  S.cohortdir_16_17 / S.ptxts, DB)   #tag the extracted texts
+        tagger0 = TaggedText(S.basedir / S.cohortdir_16_17 / S.ptxts, DB)   #tag the extracted texts
         file1 = tagger0.onlyfiles[165]
         tagger0.process_file(file1)
         tagger0.process_content(file1, S.basedir / S.cohortdir_17_18 / S.ptxts / file1)
