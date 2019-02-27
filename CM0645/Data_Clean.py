@@ -3,7 +3,8 @@
 # We remove blank columns, and outliers.
 
 from os import listdir
-from os.path import isfile, join
+#from os.path import isfile, join
+from pathlib import Path         # python 3 way
 import re
 import sys
 import string
@@ -18,13 +19,9 @@ from scipy import stats
 import pandas as pd
 import numpy as np
 
+import Settings as S                    # pathnames
 from CM0645db import Db
 
-#if changing the folders, please comment out these lines and add your own
-# it is easier then to swap hosts
-basedir = "/Users/jeremyellman/Documents/Projects_Active/CM0645_15_16/"
-basedir = "/home/izje1/Documents/Projects_Active/CM0645_15_16/"
-basedir = "/home/jeremy/Projects-Active/CM0645/"
 
 class Data_Clean:
     df = None
@@ -92,7 +89,7 @@ class Data_Clean:
 
 if __name__ == "__main__":
     dbfile = S.dbfile
-    DB = Db(basedir + dbfile)
+    DB = Db(dbfile)
     DC = Data_Clean(DB)
     DC.getProjectDataFrames()
     df90b = DC.DataFramesRemoveBlank(DC.df90a)
