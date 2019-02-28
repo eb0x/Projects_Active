@@ -98,7 +98,7 @@ class TaggedText:
         with open(filename, 'r', encoding='utf8') as f:
             content = f.read()
             self.sent_tokenize_list = sent_tokenize(content )   #split into sentences         
-            self.record_basic_stats(filename.name, self.sent_tokenize_list)
+            self.record_basic_stats(filename, self.sent_tokenize_list)
             
 #Create dictionary of Basic statistics from NLTK
 # then add these to the SQLite using addTextStats
@@ -134,9 +134,9 @@ class TaggedText:
 #        ourTSdict['CSAWL_count'] = dictback['CSAWL_count']
 #        print("NLTK Results:" , ourTSdict)
         ourTSdict.update(dictback)
-        self.DB.addTextStats(filename, ourTSdict) # takes dictionary of stats and file name
-        print("File: %s, Sents: %d, words: %d, Vocabulary: %d\n" %
-        (filename, sent_count, token_count, len(word_dict)))
+        self.DB.addTextStats(filename.name, ourTSdict) # takes dictionary of stats and file name
+        print("Token Tag, record_basic_stats: File: %s, Sents: %d, words: %d, Vocabulary: %d\n" %
+        (filename.name, sent_count, token_count, len(word_dict)))
 
 #
     def Calculate_Information_Content(self, word_dict):
@@ -184,7 +184,7 @@ class TaggedText:
         total = sum(profile.values())       #all the tagged tokens 
         profile2 = {tag: value/total for (tag, value) in profile.items()}
 #        print(profile2)
-        self.DB.addTextStats(filename, profile2)
+        self.DB.addTextStats(filename.name, profile2)
 
 #Calculates AWL and BNC Membership
     def Calculate_AWL(self):
@@ -262,7 +262,7 @@ class TaggedText:
 if __name__ == "__main__":
     dbfile = S.dbfile
    
-    DB = Db(S.basedir / S.dbfile)
+    DB = Db( S.dbfile)
     JustOne =  True # True #False
     if JustOne:
         tagger0 = TaggedText(S.basedir /  S.cohortdir_16_17 / S.ptxts, DB)   #tag the extracted texts

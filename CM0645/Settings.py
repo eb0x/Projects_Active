@@ -8,7 +8,7 @@ print("Script path {}, parent {}". format(scriptpath, parent))
 
 basedir = parent #'/home/jeremy/Projects-Active/'
 #basedir = '/home/izje1/Documents/Projects_Active/'
-dbfile = basedir.joinpath('CM0645.sqlite')
+dbfile = basedir / 'CM0645.sqlite'
 
 marksfile_15_16 = 'CM0645_Marks_15_16.csv'
 cohortdir_15_16 = 'CM0645_Projects_15_16/' 

@@ -22,7 +22,7 @@ outdir = basedir / S.cohortdir_16_17 / S.ptxts
 
 class Readability_Stats:
     data = ""
-    debug = True
+    debug = False # True
     
     def __init__(self, mypath, Db):
         p = Path(mypath)
