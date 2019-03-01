@@ -36,6 +36,7 @@ def chunks(l, n):
 
 class TaggedText:
     mybase = ""
+    debug = True
     token_count = 0
     sentences = 0
     word_dict = {}
@@ -89,7 +90,6 @@ class TaggedText:
 #Read the filename content into one variable self.content
 #   
     def process_file(self, filename):
-#        fname = self.mybase  + filename
         self.token_count = 0
         self.sentences = 0
         self.word_dict = {}
@@ -130,9 +130,10 @@ class TaggedText:
         self.word_dict = word_dict
         ourTSdict['Rel_BNC'] = self.Calculate_Information_Content(word_dict)
         dictback = self.Calculate_AWL()
-#        ourTSdict['AWL_count'] = dictback['AWL_count']
-#        ourTSdict['CSAWL_count'] = dictback['CSAWL_count']
-#        print("NLTK Results:" , ourTSdict)
+        ourTSdict['AWL_count'] = dictback['AWL_count']
+        ourTSdict['CSAWL_count'] = dictback['CSAWL_count']
+        if self.debug:
+            print("NLTK Results:" , ourTSdict)
         ourTSdict.update(dictback)
         self.DB.addTextStats(filename.name, ourTSdict) # takes dictionary of stats and file name
         print("Token Tag, record_basic_stats: File: %s, Sents: %d, words: %d, Vocabulary: %d\n" %
@@ -162,6 +163,8 @@ class TaggedText:
 #         trying to lose none text lines like headers.
 #
     def process_content(self, filename, outfilename):
+        if debug:
+            print("process_content {} ==> {}\n".format(filename, outfilename))
         with open(outfilename, 'w', encoding='utf8') as the_file:
             wr = csv.writer(the_file)
             self.process_PoS(filename, wr)
@@ -250,7 +253,7 @@ class TaggedText:
             try:
                 if not self.DB.check_processed(file.name, 'NLTK_sentences'): # expensive op --don't repeat if done
                     self.process_file(file)
-                    self.process_content(file, outdir + file)
+                    self.process_content(file, outdir / file.name)
             except Exception as e:
                         print("Token Tag: process_Dir: {} file: {}".format(e, file))
         
