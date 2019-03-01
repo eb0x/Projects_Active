@@ -12,9 +12,9 @@ dbfile = basedir / 'CM0645.sqlite'
 
 marksfile_15_16 = 'CM0645_Marks_15_16.csv'
 cohortdir_15_16 = 'CM0645_Projects_15_16/' 
-marksfile_16_17 = 'CM0645_Marks_16_17_v2.csv'
+marksfile_16_17 = 'CM0645_Marks_16_17_added_v3.csv' # was 'CM0645_Marks_16_17_v2.csv'
 cohortdir_16_17 = 'CM0645_Projects_16_17/'
-marksfile_17_18 = 'CM0645_Marks_17_18_v4.csv'
+marksfile_17_18 = 'CM0645_Marks_17_18_added_v5.csv' # was 'CM0645_Marks_17_18_v4.csv'
 cohortdir_17_18 = 'CM0645_Projects_17_18/'
 
 txts='txts/'
