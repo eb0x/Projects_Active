@@ -35,10 +35,6 @@ filename TEXT NOT NULL,                -- full path to file txt
 Report_Mark  REAL default 0,           -- the actual project mark as normalised percent
 Report_Max INTEGER default 0,
 Report_Percent REAL default 0,
-NLTK_words INTEGER default 0,
-NLTK_sentences INTEGER default 0,
-NLTK_vocab INTEGER default 0,
-NLTK_spread REAL default 0,     --proportion of unique terms
 AWL_count REAL default 0,       -- proportion of vocab from AWL
 CSAWL_count REAL default 0,     -- proportion of vocab from CSAWL
 LFP_k1 REAL default 0,          --1st 1000 BNC Words
@@ -55,10 +51,10 @@ n_unique_words INTEGER default 0,
 n_long_words INTEGER default 0,
 n_monosyllable_words INTEGER default 0,
 n_polysyllable_words INTEGER default 0,
-ts_avg_sentence_length REAL default 0, --derived text stats
-ts_avg_syllables_per_word REAL default 0,
-ts_avg_letter_per_word REAL default 0,
-ts_avg_sentence_per_word REAL default 0,
+-- ts_avg_sentence_length REAL default 0, --derived text stats
+-- ts_avg_syllables_per_word REAL default 0,
+-- ts_avg_letter_per_word REAL default 0,
+-- ts_avg_sentence_per_word REAL default 0,
 flesch_kincaid_grade_level  REAL default 0, -- Textacy readability stats
 flesch_reading_ease  REAL default 0,
 smog_index  REAL default 0,
@@ -68,46 +64,25 @@ automated_readability_index  REAL default 0,
 lix  REAL default 0,
 gulpease_index  REAL default 0,
 wiener_sachtextformel  REAL default 0,
-ts_text_standard INTEGER default 0,
-Heap_k REAL default 0,
+-- ts_text_standard INTEGER default 0,
+-- Heap_k REAL default 0,
 Rel_BNC default 0,
-tag_CC REAL default 0, --	Coordinating conjunction
-tag_CD REAL default 0, --	Cardinal number
-tag_DT REAL default 0, --	Determiner
-tag_EX REAL default 0, --	Existential there
-tag_FW REAL default 0, --	Foreign word
-tag_IN REAL default 0, --	Preposition or subordinating conjunction
-tag_JJ REAL default 0, --	Adjective
-tag_JJR REAL default 0, --	Adjective, comparative
-tag_JJS REAL default 0, --	Adjective, superlative
-tag_LS REAL default 0, --	List item marker
-tag_MD REAL default 0, --	Modal
-tag_NN REAL default 0, --	Noun, singular or mass
-tag_NNS REAL default 0, --	Noun, plural
-tag_NNP REAL default 0, --	Proper noun, singular
-tag_NNPS REAL default 0, --	Proper noun, plural
-tag_PDT REAL default 0, --	Predeterminer
-tag_POS REAL default 0, --	Possessive ending
-tag_PRP REAL default 0, --	Personal pronoun
-tag_PRPD REAL default 0, --$	Possessive pronoun PRP$
-tag_RB REAL default 0, --	Adverb
-tag_RBR REAL default 0, --	Adverb, comparative
-tag_RBS REAL default 0, --	Adverb, superlative
-tag_RP REAL default 0, --	Particle
-tag_SYM REAL default 0, --	Symbol
-tag_TO REAL default 0, --	to
-tag_UH REAL default 0, --	Interjection
-tag_VB REAL default 0, --	Verb, base form
-tag_VBD REAL default 0, --	Verb, past tense
-tag_VBG REAL default 0, --	Verb, gerund or present participle
-tag_VBN REAL default 0, --	Verb, past participle
-tag_VBP REAL default 0, --	Verb, non-3rd person singular present
-tag_VBZ REAL default 0, --	Verb, 3rd person singular present
-tag_WDT REAL default 0, --	Wh-determiner
-tag_WP REAL default 0, --	Wh-pronoun
-tag_WPD REAL default 0, --$	Possessive wh-pronoun WP$
-tag_WRB REAL default 0, --	Wh-adverb
-tag_D REAL default 0 --	unsure was $
+ADJ  REAL default 0,            --Universal Tagset as in Textacy
+ADP  REAL default 0,
+ADV  REAL default 0,
+CCONJ  REAL default 0,
+DET  REAL default 0,
+INTJ  REAL default 0,
+NOUN  REAL default 0,
+NUM  REAL default 0,
+PART  REAL default 0,
+PRON  REAL default 0,
+PROPN  REAL default 0,
+PUNCT  REAL default 0,
+SPACE  REAL default 0,
+SYM  REAL default 0,
+VERB  REAL default 0,
+X  REAL default 0
 );'''
 
 
@@ -307,7 +282,7 @@ class Db:
 #Get the pandas Dataframe
     def getDF(self, table, get_again = False):
 #        if self.df.empty() or get_again:
-        cursor = self.conn.cursor() 
+#        cursor = self.conn.cursor() 
         self.df = pd.read_sql_query(f"SELECT * FROM {table}", self.conn)
         return self.df
 
