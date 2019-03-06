@@ -142,7 +142,10 @@ class Readability_Stats:
         for word, count in doc.to_bag_of_words(as_strings=True).items():
             rmax += count
             if word in self.BNC:
-                TotalIC += count * self.LogTotval/self.BNC[word]
+                if count == 1:
+                    TotalIC += self.LogTotval/self.BNC[word]
+                else:           # 1 + 1/2 + 1/3 ... 1/count Tailor series harmonic expansion
+                    TotalIC += (math.log(count) + 0.577 +1/(2*count))* self.LogTotval/self.BNC[word] #  0.577 ~= Euler–Mascheroni constant 
                 if word in self.kdicts[0]:
                     k1 += count
                 elif word in self.kdicts[1]:
