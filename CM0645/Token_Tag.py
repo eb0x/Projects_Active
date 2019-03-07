@@ -36,6 +36,7 @@ def chunks(l, n):
 
 class TaggedText:
     mybase = ""
+    debug = True
     token_count = 0
     sentences = 0
     word_dict = {}
@@ -89,7 +90,6 @@ class TaggedText:
 #Read the filename content into one variable self.content
 #   
     def process_file(self, filename):
-#        fname = self.mybase  + filename
         self.token_count = 0
         self.sentences = 0
         self.word_dict = {}
@@ -98,7 +98,7 @@ class TaggedText:
         with open(filename, 'r', encoding='utf8') as f:
             content = f.read()
             self.sent_tokenize_list = sent_tokenize(content )   #split into sentences         
-            self.record_basic_stats(filename.name, self.sent_tokenize_list)
+            self.record_basic_stats(filename, self.sent_tokenize_list)
             
 #Create dictionary of Basic statistics from NLTK
 # then add these to the SQLite using addTextStats
@@ -130,13 +130,14 @@ class TaggedText:
         self.word_dict = word_dict
         ourTSdict['Rel_BNC'] = self.Calculate_Information_Content(word_dict)
         dictback = self.Calculate_AWL()
-#        ourTSdict['AWL_count'] = dictback['AWL_count']
-#        ourTSdict['CSAWL_count'] = dictback['CSAWL_count']
-#        print("NLTK Results:" , ourTSdict)
+        ourTSdict['AWL_count'] = dictback['AWL_count']
+        ourTSdict['CSAWL_count'] = dictback['CSAWL_count']
+        if self.debug:
+            print("NLTK Results:" , ourTSdict)
         ourTSdict.update(dictback)
-        self.DB.addTextStats(filename, ourTSdict) # takes dictionary of stats and file name
-        print("File: %s, Sents: %d, words: %d, Vocabulary: %d\n" %
-        (filename, sent_count, token_count, len(word_dict)))
+        self.DB.addTextStats(filename.name, ourTSdict) # takes dictionary of stats and file name
+        print("Token Tag, record_basic_stats: File: %s, Sents: %d, words: %d, Vocabulary: %d\n" %
+        (filename.name, sent_count, token_count, len(word_dict)))
 
 #
     def Calculate_Information_Content(self, word_dict):
@@ -162,6 +163,8 @@ class TaggedText:
 #         trying to lose none text lines like headers.
 #
     def process_content(self, filename, outfilename):
+        if debug:
+            print("process_content {} ==> {}\n".format(filename, outfilename))
         with open(outfilename, 'w', encoding='utf8') as the_file:
             wr = csv.writer(the_file)
             self.process_PoS(filename, wr)
@@ -184,7 +187,7 @@ class TaggedText:
         total = sum(profile.values())       #all the tagged tokens 
         profile2 = {tag: value/total for (tag, value) in profile.items()}
 #        print(profile2)
-        self.DB.addTextStats(filename, profile2)
+        self.DB.addTextStats(filename.name, profile2)
 
 #Calculates AWL and BNC Membership
     def Calculate_AWL(self):
@@ -250,7 +253,7 @@ class TaggedText:
             try:
                 if not self.DB.check_processed(file.name, 'NLTK_sentences'): # expensive op --don't repeat if done
                     self.process_file(file)
-                    self.process_content(file, outdir / file)
+                    self.process_content(file, outdir / file.name)
             except Exception as e:
                         print("Token Tag: process_Dir: {} file: {}".format(e, file))
         
@@ -262,10 +265,10 @@ class TaggedText:
 if __name__ == "__main__":
     dbfile = S.dbfile
    
-    DB = Db(S.basedir / S.dbfile)
-    JustOne =  False # True #False
+    DB = Db( S.dbfile)
+    JustOne =  True # True #False
     if JustOne:
-        tagger0 = TaggedText(S.basedir / S.cohortdir_16_17 / S.ptxts, DB)   #tag the extracted texts
+        tagger0 = TaggedText(S.basedir /  S.cohortdir_16_17 / S.ptxts, DB)   #tag the extracted texts
         file1 = tagger0.onlyfiles[165]
         tagger0.process_file(file1)
         tagger0.process_content(file1, S.basedir / S.cohortdir_17_18 / S.ptxts / file1)
