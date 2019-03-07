@@ -163,7 +163,7 @@ class TaggedText:
 #         trying to lose none text lines like headers.
 #
     def process_content(self, filename, outfilename):
-        if debug:
+        if self.debug:
             print("process_content {} ==> {}\n".format(filename, outfilename))
         with open(outfilename, 'w', encoding='utf8') as the_file:
             wr = csv.writer(the_file)
