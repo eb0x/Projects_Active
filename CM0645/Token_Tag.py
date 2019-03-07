@@ -271,10 +271,10 @@ if __name__ == "__main__":
     else:
         tagger1 = TaggedText(S.basedir / S.cohortdir_15_16 / S.ptxts, DB)  # tag the extracted texts
         tagger1.process_Dir(S.basedir / S.cohortdir_15_16 / S.taggedtxts)
-        #tagger2 = TaggedText(S.basedir / S.cohortdir_16_17 / S.ptxts, DB)  # tag the extracted texts
-        #tagger2.process_Dir(S.basedir / S.cohortdir_16_17 / S.taggedtxts)
-        #tagger3 = TaggedText(S.basedir / S.cohortdir_17_18 / S.ptxts, DB)  # tag the extracted texts
-        #tagger3.process_Dir(S.basedir / S.cohortdir_17_18 / S.taggedtxts)
+        tagger2 = TaggedText(S.basedir / S.cohortdir_16_17 / S.ptxts, DB)  # tag the extracted texts
+        tagger2.process_Dir(S.basedir / S.cohortdir_16_17 / S.taggedtxts)
+        tagger3 = TaggedText(S.basedir / S.cohortdir_17_18 / S.ptxts, DB)  # tag the extracted texts
+        tagger3.process_Dir(S.basedir / S.cohortdir_17_18 / S.taggedtxts)
     # tagger1.Describe()
 
 # content = [x.strip() for x in content]
