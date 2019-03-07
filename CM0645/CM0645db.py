@@ -1,4 +1,5 @@
 #from os import listdir
+import sys
 import sqlite3
 from sqlite3 import Error
 import csv
@@ -349,7 +350,12 @@ if __name__ == '__main__':
         DB.SaveCSV('raw')
     except Exception as e:
         print("Exception in CM0645 main {}".format(e))
-    resetting = False  # False # True 
+    args = sys.argv[1:]
+    if args[0] == "":
+        resetting = False  # False # True
+    else:
+        resetting = True  # False # True
+    print("Arg: {}, Reset: {}".format(sys.argv[1:], resetting))
     if resetting:
         DB.initialize()
     else:
