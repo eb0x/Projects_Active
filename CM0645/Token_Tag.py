@@ -266,7 +266,7 @@ if __name__ == "__main__":
     dbfile = S.dbfile
    
     DB = Db( S.dbfile)
-    JustOne =  True # True #False
+    JustOne =  False # True #False
     if JustOne:
         tagger0 = TaggedText(S.basedir /  S.cohortdir_16_17 / S.ptxts, DB)   #tag the extracted texts
         file1 = tagger0.onlyfiles[165]

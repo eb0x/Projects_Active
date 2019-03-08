@@ -4,7 +4,7 @@ from pathlib import Path
 import re
 import sys
 import time
-
+import textacy
 
 import Settings as S                    # pathnames
 import CM0645db as Db_m         # Db_m  = DB Module
@@ -46,7 +46,9 @@ class PlainText:
         fname = self.mybasedir  / filename
 		# Choose utf8 encoding when opening file to ignore non-utf-8 characters
         with open(fname, 'r', encoding="utf8") as f:
-            self.content = f.readlines()
+            lines = f.readline()
+            # Pre-process content before using
+            self.content = self.preprocess_text(lines);
         if self.debug: 
             print("File: %s has %d lines" %(fname, len(self.content)))
             
@@ -124,6 +126,13 @@ class PlainText:
                         print("Extract parts: Process Error in {}, reason: {}".format(afile, e))
         print("Length File Data {}".format(len(files_data)))
         self.DB.add_files(files_data)
+
+    def preprocess_text(self, text):
+        # Pre-process File boolean to fix the following:  fix_unicode, lowercase, no_urls, no_emails, no_phone_numbers, no_numbers, no_currency_symbols, no_punct, no_contractions, no_accents
+        # Ref: https://chartbeat-labs.github.io/textacy/api_reference.html#module-textacy.preprocess
+        prep_text = textacy.preprocess_text(text, True, False, False,True,True,True,False,False,False,False,True)
+
+        return prep_text
 
     def Describe(self):
         print(self.onlyfiles)
