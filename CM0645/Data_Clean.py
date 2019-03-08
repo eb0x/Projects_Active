@@ -12,6 +12,11 @@ import csv
 import pickle
 import matplotlib
 
+import matplotlib.pylab as plt
+from matplotlib import pyplot
+from pandas.plotting import scatter_matrix
+import seaborn as sns
+
 from sklearn import preprocessing
 from sklearn.preprocessing import MinMaxScaler
 from scipy import stats
@@ -63,6 +68,17 @@ class Data_Clean:
         # Remove Outliers
         ndf = df[(np.abs(stats.zscore( df)) < 3).all(axis=1)]
         return ndf
+
+    def CorrelationsToCSV(self, cdf):
+        numDF = cdf.iloc[:, 5:]
+        nbDF = self.DataFramesRemoveBlank(numDF);
+        normDF = self.NormDataFrames(nbDF);
+
+        dfPD = pd.DataFrame(data=normDF)
+
+        cor_data = dfPD
+        norm_corr = cor_data.corr(method='pearson')
+        norm_corr.to_csv('../norm_correlations.csv')
 
 #normalize scale starting at somecol
     def NormSingleDF(self, adf, fromcol=1):
