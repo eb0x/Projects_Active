@@ -79,7 +79,7 @@ if __name__ == "__main__":
     namedEntity = Named_Entity_Stats(outdir, DB)
     namedEntity.Describe()
 
-    justone =  False    #True False
+    justone =  True    #True False
     if justone:
         file1 = namedEntity.onlyfiles[103]   #164 Rory broken
         namedEntity.process_file(file1)
