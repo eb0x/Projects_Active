@@ -22,6 +22,8 @@ import numpy as np
 import Settings as S                    # pathnames
 from CM0645db import Db
 
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 class Data_Clean:
     df = None
@@ -47,8 +49,10 @@ class Data_Clean:
     def DataFramesRemoveBlank(self, df):
         #https://stackoverflow.com/questions/21164910/delete-column-in-pandas-if-it-is-all-zeros
         ndf = df.loc[:, (df != 0).any(axis=0)]
+        # Drop a row by condition
+        ndf2 = ndf[df.AWL_count != 0]
         #remove other nearly empty cols or with minimal data
-        ndf2 = ndf.drop(['tag_LS', 'tag_SYM', 'tag_NNPS', 'tag_UH', 'tag_D'], axis=1)
+        #ndf2 = ndf.drop(['tag_LS', 'tag_SYM', 'tag_NNPS', 'tag_UH', 'tag_D'], axis=1)
         return ndf2
        
   #generic normalizer/scaler  assumes all cols numeric
@@ -61,7 +65,7 @@ class Data_Clean:
         scaled_values = scaler.fit_transform(df) 
         df.loc[:,:] = scaled_values
         # Remove Outliers
-        ndf = df[(np.abs(stats.zscore( df)) < 3).all(axis=1)]
+        ndf = df[(np.abs(stats.zscore( df)) < 4).all(axis=1)]
         return ndf
 
 #normalize scale starting at somecol
@@ -71,7 +75,7 @@ class Data_Clean:
         cols_to_norm = ndf2.columns[fromcol:]       #dont norm project max mark (type)
         ndf2[cols_to_norm] = MinMaxScaler().fit_transform(ndf2[cols_to_norm]) #normalise rest
         # Remove Outliers
-        ndf3 = ndf2[(np.abs(stats.zscore( ndf2)) < 3).all(axis=1)]
+        ndf3 = ndf2[(np.abs(stats.zscore( ndf2)) < 4).all(axis=1)]
         ndf3.insert(1, 'uid', self.df['uid'])       # replace uid
         return ndf3
 
@@ -81,14 +85,14 @@ class Data_Clean:
         removed_rows.to_csv('removed_rows.csv')
         
     def DescribeDFs(self):
-        df100a.describe()
-        print(df90a.describe())
-        df60a.describe()
-        df40a.describe()
+        self.df100a.describe()
+        print(self.df90a.describe())
+        self.df60a.describe()
+        self.df40a.describe()
         
 
 if __name__ == "__main__":
-    dbfile = S.dbfile
+    dbfile = S.basedir / S.dbfile
     DB = Db(dbfile)
     DC = Data_Clean(DB)
     DC.getProjectDataFrames()
