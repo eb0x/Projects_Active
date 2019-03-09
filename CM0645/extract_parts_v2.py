@@ -46,9 +46,7 @@ class PlainText:
         fname = self.mybasedir  / filename
 		# Choose utf8 encoding when opening file to ignore non-utf-8 characters
         with open(fname, 'r', encoding="utf8") as f:
-            lines = f.readline()
-            # Pre-process content before using
-            self.content = self.preprocess_text(lines);
+            self.content = f.readlines()
         if self.debug: 
             print("File: %s has %d lines" %(fname, len(self.content)))
             
@@ -62,7 +60,9 @@ class PlainText:
             line_count = 0
             lines_written = 0 
             for line in self.content:
-                #line = line.rstrip()
+                # Boolean for options: fix_unicode, lowercase, no_urls, no_emails, no_phone_numbers, no_numbers, no_currency_symbols, no_punct, no_contractions, no_accents
+                # https://chartbeat-labs.github.io/textacy/api_reference.html#module-textacy.preprocess
+                line = textacy.preprocess_text(line, True, False, False, True, True, True, False, False, False, False, True)
                 line_count += 1
                 if found_TOC:
                     # Find Table of Contents
@@ -119,20 +119,13 @@ class PlainText:
                 if group: 
                     cohort  = group.group(1)
                 self.process_file(afile)
-                (line_count, lines_written ) = self.process_content(outdir / afile)
+                (line_count, lines_written ) = self.process_content(outdir / afile.name)
                 #self.DB.add_file(afile,  firstname, surname, cohort,  line_count, lines_written )
                 files_data.append([afile.name,  firstname, surname, cohort,  line_count, lines_written ])
             except Exception as e:
-                        print("Extract parts: Process Error in {}, reason: {}".format(afile, e))
+                        print("Extract parts: Process Error in {}, reason: {}".format(afile.name, e))
         print("Length File Data {}".format(len(files_data)))
         self.DB.add_files(files_data)
-
-    def preprocess_text(self, text):
-        # Pre-process File boolean to fix the following:  fix_unicode, lowercase, no_urls, no_emails, no_phone_numbers, no_numbers, no_currency_symbols, no_punct, no_contractions, no_accents
-        # Ref: https://chartbeat-labs.github.io/textacy/api_reference.html#module-textacy.preprocess
-        prep_text = textacy.preprocess_text(text, True, False, False,True,True,True,False,False,False,False,True)
-
-        return prep_text
 
     def Describe(self):
         print(self.onlyfiles)
