@@ -12,6 +12,9 @@ import csv
 import pickle
 import matplotlib
 
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 from sklearn import preprocessing
 from sklearn.preprocessing import MinMaxScaler
 from scipy import stats
@@ -21,9 +24,6 @@ import numpy as np
 
 import Settings as S                    # pathnames
 from CM0645db import Db
-
-import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
 
 class Data_Clean:
     df = None
