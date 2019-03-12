@@ -19,7 +19,8 @@ from nltk.tag import pos_tag_sents, pos_tag
 #from nltk.stem.snowball import SnowballStemmer
 import string, timeit
 
-from CM0645db import Db
+import Settings as S                    # pathnames
+#from CM0645db import Db
 
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle') # use punkt English Tokenizer
 translator = str.maketrans('', '', string.punctuation)
@@ -33,7 +34,8 @@ class Process_BNC:
             self.word_dict = {}
             self.process_all()
         else:
-            self.loadBNC("BNC.pickle")
+#            BNCdict =  pickle.load(open( S.basedir / S.datadir / S.BNCfile, "rb" ))
+            self.loadBNC(S.BNCfile)
 
 
     def process_all(self):
@@ -83,7 +85,7 @@ class Process_BNC:
 
     def loadBNC(self, infile):
         print("BNC File: ", infile)
-        BNCdict =  pickle.load(open( infile, "rb" ))
+        BNCdict =  pickle.load(open( S.basedir / S.datadir / S.BNCfile, "rb" ))
         self.word_dict = BNCdict
 
     def describe(self):
@@ -93,6 +95,6 @@ class Process_BNC:
 
 if __name__ == "__main__":
     BNC = Process_BNC("/mnt/sdc3/home/BNC_XML/PlainTexts/", reprocess=False)
-#    BNC.saveBNC("BNC.pickle")
+#    BNC.saveBNC(S.BNCfile)
     BNC.describe()
     BNC.CalcIDF()

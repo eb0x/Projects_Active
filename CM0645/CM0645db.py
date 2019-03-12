@@ -1,14 +1,13 @@
-
-from os import listdir
+#from os import listdir
+import sys
 import sqlite3
 from sqlite3 import Error
 import csv
 import pandas as pd
 
-basedir = '/home/jeremy/Projects-Active/'
-#basedir = '/home/izje1/Documents/Projects_Active/'
-dbfile = basedir + 'CM0645.sqlite'
-table_name = 'projects'
+import Settings as S
+
+#table_name = 'projects'
 
 #Many Operations will be expensive, so store any values in the DB to avoid re-computing
 #the idea is that the vectors input to the deep learning system will be extracted from 
@@ -36,10 +35,6 @@ filename TEXT NOT NULL,                -- full path to file txt
 Report_Mark  REAL default 0,           -- the actual project mark as normalised percent
 Report_Max INTEGER default 0,
 Report_Percent REAL default 0,
-NLTK_words INTEGER default 0,
-NLTK_sentences INTEGER default 0,
-NLTK_vocab INTEGER default 0,
-NLTK_spread REAL default 0,     --proportion of unique terms
 AWL_count REAL default 0,       -- proportion of vocab from AWL
 CSAWL_count REAL default 0,     -- proportion of vocab from CSAWL
 LFP_k1 REAL default 0,          --1st 1000 BNC Words
@@ -56,10 +51,10 @@ n_unique_words INTEGER default 0,
 n_long_words INTEGER default 0,
 n_monosyllable_words INTEGER default 0,
 n_polysyllable_words INTEGER default 0,
-ts_avg_sentence_length REAL default 0, --derived text stats
-ts_avg_syllables_per_word REAL default 0,
-ts_avg_letter_per_word REAL default 0,
-ts_avg_sentence_per_word REAL default 0,
+-- ts_avg_sentence_length REAL default 0, --derived text stats
+-- ts_avg_syllables_per_word REAL default 0,
+-- ts_avg_letter_per_word REAL default 0,
+-- ts_avg_sentence_per_word REAL default 0,
 flesch_kincaid_grade_level  REAL default 0, -- Textacy readability stats
 flesch_reading_ease  REAL default 0,
 smog_index  REAL default 0,
@@ -69,46 +64,43 @@ automated_readability_index  REAL default 0,
 lix  REAL default 0,
 gulpease_index  REAL default 0,
 wiener_sachtextformel  REAL default 0,
-ts_text_standard INTEGER default 0,
-Heap_k REAL default 0,
+-- ts_text_standard INTEGER default 0,
+-- Heap_k REAL default 0,
 Rel_BNC default 0,
-tag_CC REAL default 0, --	Coordinating conjunction
-tag_CD REAL default 0, --	Cardinal number
-tag_DT REAL default 0, --	Determiner
-tag_EX REAL default 0, --	Existential there
-tag_FW REAL default 0, --	Foreign word
-tag_IN REAL default 0, --	Preposition or subordinating conjunction
-tag_JJ REAL default 0, --	Adjective
-tag_JJR REAL default 0, --	Adjective, comparative
-tag_JJS REAL default 0, --	Adjective, superlative
-tag_LS REAL default 0, --	List item marker
-tag_MD REAL default 0, --	Modal
-tag_NN REAL default 0, --	Noun, singular or mass
-tag_NNS REAL default 0, --	Noun, plural
-tag_NNP REAL default 0, --	Proper noun, singular
-tag_NNPS REAL default 0, --	Proper noun, plural
-tag_PDT REAL default 0, --	Predeterminer
-tag_POS REAL default 0, --	Possessive ending
-tag_PRP REAL default 0, --	Personal pronoun
-tag_PRPD REAL default 0, --$	Possessive pronoun PRP$
-tag_RB REAL default 0, --	Adverb
-tag_RBR REAL default 0, --	Adverb, comparative
-tag_RBS REAL default 0, --	Adverb, superlative
-tag_RP REAL default 0, --	Particle
-tag_SYM REAL default 0, --	Symbol
-tag_TO REAL default 0, --	to
-tag_UH REAL default 0, --	Interjection
-tag_VB REAL default 0, --	Verb, base form
-tag_VBD REAL default 0, --	Verb, past tense
-tag_VBG REAL default 0, --	Verb, gerund or present participle
-tag_VBN REAL default 0, --	Verb, past participle
-tag_VBP REAL default 0, --	Verb, non-3rd person singular present
-tag_VBZ REAL default 0, --	Verb, 3rd person singular present
-tag_WDT REAL default 0, --	Wh-determiner
-tag_WP REAL default 0, --	Wh-pronoun
-tag_WPD REAL default 0, --$	Possessive wh-pronoun WP$
-tag_WRB REAL default 0, --	Wh-adverb
-tag_D REAL default 0 --	unsure was $
+ADJ  REAL default 0,            --Universal Tagset as in Textacy
+ADP  REAL default 0,
+ADV  REAL default 0,
+CCONJ  REAL default 0,
+DET  REAL default 0,
+INTJ  REAL default 0,
+NOUN  REAL default 0,
+NUM  REAL default 0,
+PART  REAL default 0,
+PRON  REAL default 0,
+PROPN  REAL default 0,
+PUNCT  REAL default 0,
+SPACE  REAL default 0,
+SYM  REAL default 0,
+VERB  REAL default 0,
+X  REAL default 0,
+ent_person REAL default 0, -- People, including fictional.
+ent_norp REAL default 0, -- Nationalities or religious or political groups.
+ent_fac REAL default 0, -- Buildings, airports, highways, bridges, etc.
+ent_org REAL default 0, -- Companies, agencies, institutions, etc.
+ent_gpe REAL default 0, -- Countries, cities, states.
+ent_loc REAL default 0, -- Non-GPE locations, mountain ranges, bodies of water.
+ent_product REAL default 0, -- Objects, vehicles, foods, etc. (Not services.)
+ent_event REAL default 0, -- Named hurricanes, battles, wars, sports events, etc.
+ent_work_of_art REAL default 0, -- Titles of books, songs, etc.
+ent_law REAL default 0, -- Named documents made into laws.
+ent_language REAL default 0, -- Any named language.
+ent_date REAL default 0, -- Absolute or relative dates or periods.
+ent_time REAL default 0, -- Times smaller than a day.
+ent_percent REAL default 0, -- Percentage, including "%".
+ent_money REAL default 0, -- Monetary values, including unit.
+ent_quantity REAL default 0, -- Measurements, as of weight or distance.
+ent_ordinal REAL default 0, -- "first", "second", etc.
+ent_cardinal REAL default 0 -- Numerals that do not fall under another type.
 );'''
 
 
@@ -120,7 +112,7 @@ class Db:
     
     def __init__(self, db_file):
         try:
-            conn = sqlite3.connect(db_file)
+            conn = sqlite3.connect(str(db_file))
             print('SQLite Version OK', sqlite3.version)
             self.conn = conn
         except Error as e:
@@ -144,7 +136,7 @@ class Db:
         try:
             Report_Percent = (Report_Mark * 100.0) /Report_Max
             cursor = self.conn.cursor()
-            cursor.execute('''INSERT INTO projects(uid, first_name, last_name, cohort, filename, Report_Mark, Report_Max, Report_Percent)
+            cursor.execute('''INSERT OR REPLACE INTO projects(uid, first_name, last_name, cohort, filename, Report_Mark, Report_Max, Report_Percent)
                   VALUES(?,?,?,?,?,?,?,?)''', (uid, first_name, last_name, cohort, filename, Report_Mark, Report_Max, Report_Percent))
             self.conn.commit()
         except sqlite3.Error as e:
@@ -158,8 +150,8 @@ class Db:
     def add_uids(self, uids_data):
         try:
             cursor = self.conn.cursor()
-            cursor.execute("BEGIN TRANSACTION;")
-            sql = '''INSERT INTO projects(uid, first_name, last_name, cohort, filename, Report_Mark, Report_Max, Report_Percent)
+#            cursor.execute("BEGIN TRANSACTION;")
+            sql = '''INSERT OR REPLACE INTO projects(uid, first_name, last_name, cohort, filename, Report_Mark, Report_Max, Report_Percent)
                   VALUES(?,?,?,?,?,?,?,?)'''
             cursor.executemany(sql, uids_data)
             cursor.execute("COMMIT;")
@@ -173,7 +165,7 @@ class Db:
     def add_file(self, filename, first_name, last_name, cohort,  raw_lines, extracted_lines):
         try:
             cursor = self.conn.cursor()
-            cursor.execute('''INSERT INTO raw(filename, first_name, last_name, cohort,  raw_lines, extracted_lines)
+            cursor.execute('''INSERT OR REPLACE INTO raw(filename, first_name, last_name, cohort,  raw_lines, extracted_lines)
                   VALUES(?,?,?,?,?,?)''', (filename, first_name, last_name, cohort,  raw_lines, extracted_lines))
             self.conn.commit()
         except sqlite3.Error as e:
@@ -187,8 +179,8 @@ class Db:
     def add_files(self, files_data):
         try:
             cursor = self.conn.cursor()
-            cursor.execute("BEGIN TRANSACTION;")
-            sql = '''INSERT INTO raw(filename, first_name, last_name, cohort,  raw_lines, extracted_lines) VALUES(?,?,?,?,?,?)'''
+#            cursor.execute("BEGIN TRANSACTION;")
+            sql = '''INSERT OR REPLACE INTO raw(filename, first_name, last_name, cohort,  raw_lines, extracted_lines) VALUES(?,?,?,?,?,?)'''
             cursor.executemany(sql, files_data)
             cursor.execute("COMMIT;")
           #  self.conn.commit()
@@ -205,7 +197,7 @@ class Db:
         cols = [key + "=" + str(value) + "," for (key, value) in TS_dict.items()]
         sql = 'UPDATE projects SET ' + ' '.join(map(str, cols))
         sql2 = sql[:-1] + ' WHERE filename=?'
-#        print("::Query: ", sql2)
+        print("addTextStats::Query: ", sql2)
         try:
             cursor = self.conn.cursor()
             cursor.execute(sql2, (filename,))
@@ -232,13 +224,13 @@ class Db:
             print("Skipping  Filename {} as {} in DB".format(filename, column))
             Found = True
         else:
-            print("Column {} for Filename {} is not in DB {}".format(column, filename, result[0]))
+            print("Column {} for Filename {} is not in DB".format(column, filename))
             Found = False
         return Found
     
     
     def logerror(self, msg):
-        print("Error: ", msg)
+        print("Error (DB): ", msg)
 
     def index_filenames(self):
         cur = self.conn.cursor()
@@ -251,7 +243,6 @@ class Db:
         
 
     def ShowTables(self):
-       # con = sql.connect(r'/Users/linnk/Desktop/Results/GData.db')
         cur = self.conn.cursor() 
         cur.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;")
         available_table=(cur.fetchall())
@@ -308,8 +299,8 @@ class Db:
 
 #Get the pandas Dataframe
     def getDF(self, table, get_again = False):
-#        if self.df.emptry() or get_again:
-        cursor = self.conn.cursor() 
+#        if self.df.empty() or get_again:
+#        cursor = self.conn.cursor() 
         self.df = pd.read_sql_query(f"SELECT * FROM {table}", self.conn)
         return self.df
 
@@ -324,20 +315,28 @@ class Db:
 
 
 if __name__ == '__main__':
-    DB = Db(dbfile)
-    DB.ShowTables()
-    DB.values_in_col('projects')
-    DB.values_in_col('raw')
-    DB.getCols()
-    DB.SaveCSV('projects')
-    DB.SaveCSV('raw')
-    resetting =   True # False # 
+    try:
+        DB = Db(str(S.dbfile))
+        DB.ShowTables()
+        DB.values_in_col('projects')
+        DB.values_in_col('raw')
+        DB.getCols('projects')
+        DB.SaveCSV('projects')
+        DB.SaveCSV('raw')
+    except Exception as e:
+        print("Exception in CM0645 main {}".format(e))
+    args = sys.argv[1:]
+    if args[0] == "":
+        resetting = False  # False # True
+    else:
+        resetting = True  # False # True
+    print("Arg: {}, Reset: {}".format(sys.argv[1:], resetting))
     if resetting:
         DB.initialize()
     else:
         DB.index_filenames()
-    # DB.ShowStatus('projects')
-    # DB.ShowStatus('raw')
+    DB.ShowStatus('projects')
+    DB.ShowStatus('raw')
     DB.getDF('projects')
     print(DB.FindLoadedCohortsRaw('raw'))
     DB.df.describe()

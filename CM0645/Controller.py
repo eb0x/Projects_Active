@@ -13,14 +13,16 @@ import pandas as pd
 import numpy as np
 
 from os import listdir
-from os.path import isfile, join
+#from os.path import isfile, join # the old way to do paths
+from pathlib import Path         # python 3 way
 from sqlite3 import Error
 
 # Projects Active Modules
 #
 #import test_CM0645_installation as test # Check installation has required packages  -- now imported into body
+import Settings as S                    # pathnames
 import Messages as m                    # enums and print related
-import extract_parts as extract_m # re based text extractor
+import extract_parts_v2 as extract_m # re based text extractor
 import Process_BNC as BNC_m     # BNC_m = BNC Module
 import CM0645db as Db_m         # Db_m  = DB Module
 import Data_Prep_v3 as DP_m     # DP_m = data prep module
@@ -29,13 +31,8 @@ import New_Readability_stats as Stats_m # Text Statistics module
 import gui_01 as gui                    # gui Module
 
 
-basedir = '/home/jeremy/Projects-Active/' # home version
-#basedir = '/home/izje1/Documents/Projects_Active/' # Northumbria verson
-
-dbfile = basedir + 'CM0645.sqlite'
-
-BNCfile = "BNC.pickle"
-
+dbfile = S.basedir / S.dbfile
+BNCfile = S.BNCfile
 
 
 def libcheck(lib):
@@ -131,6 +128,7 @@ class Controller:
     
     def __init__(self, dbfile):
         self.cohorts = []
+        self.basedir = S.basedir
         self.DB = dbfile
         self.dbfile = dbfile
 
@@ -177,39 +175,23 @@ class Controller:
                 return cohort
         self.gprint("addCohort: loaded {}, Label {}".format(loaded, label))
         if label == "15_16":
-            marksfile = 'CM0645_Marks_15_16.csv'
-            cohortdir = 'CM0645_Projects_15_16/' 
+            marksfile = S.marksfile_15_16
+            cohortdir = S.cohortdir_15_16 
         elif label == "16_17":
-            marksfile = 'CM0645_Marks_16_17_v2.csv'
-            cohortdir = 'CM0645_Projects_16_17/'
+            marksfile = S.marksfile_16_17
+            cohortdir = S.cohortdir_16_17
         elif label == "17_18":
-            marksfile = 'CM0645_Marks_17_18_v4.csv'
-            cohortdir = 'CM0645_Projects_17_18/'
+            marksfile = S.marksfile_17_18
+            cohortdir = S.cohortdir_17_18
         else:
             print("Cohort Label {} not recognised". format(label))
             unrecognised = True
-        if (not unrecognised):
-            txtdir = basedir + cohortdir + 'txts/'
-            ptxtdir = basedir + cohortdir + 'ptxts/' # directory of processed texts
-            taggeddir = basedir + cohortdir + 'taggedtxts/'
-            marksf = basedir + cohortdir + marksfile
-            cohort = DP_m.Cohort(label, marksf, txtdir, ptxtdir, taggeddir)
+        if not unrecognised:
+            cohort = DP_m.Cohort(label, cohortdir, marksfile)
             self.cohorts.append(cohort)
             return cohort
         else:
             return False
-#        print("addCohort: Loaded Cohort(s):")
- #       [print(" {}: ".format(acocohorts f.cohorts]
-
-#     cntrl.addCohort("15-16", 'CMcohorts = self.DB.FindLoadedCohortsRaw('raw')ks_15_16.csv', basedir, 'CM0645_Projects_15_16/')
-#     cntrl.addCohort("16-17", 'CMcohorts = self.DB.FindLoadedCohortsRaw('raw')ks_16_17_v2.csv', basedir, 'CM0645_Projects_16_17/')
-#     cntrl.addCohort("17-18", 'CM0645_Projects_17_18/CM0645_Marks_17_18_v4.csv', basedir, 'CM0645_Projects_17_18/')
-        # cohort = DP_m.Cohort(label, marksfile, txtdir, ptxtdir, taggeddir)
-        # cohort.get_marks()
-        # cohort.get_files()
-        # cohort.equate_names_marks(self.DB)
-        # self.cohorts.append(cohort)
-        # self.DB.index_filenames()
 
         ##NLTK, AWL, LFP, Tagging
 
@@ -298,18 +280,8 @@ if __name__ == "__main__":
     except SystemExit as inst:
         if inst.args[0] is True: # raised by sys.exit(True) when tests failed
             raise
-
-    dbfile = basedir + 'CM0645/' + 'CM0645.sqlite'
+        
+    dbfile = str(S.dbfile)
     cntrl = Controller(dbfile)
     cntrl.getDB(dbfile)
-
-#    cntrl.DB.initialize()
-#     cntrl.BNC = BNC_m.Process_BNC("/mnt/sdc3/home/BNC_XML/PlainTexts/")
-#     cntrl.BNC.loadBNC(BNCfile)
-#     cntrl.addCohort("15-16", 'CM0645_Projects_15_16/CM0645_Marks_15_16.csv', basedir, 'CM0645_Projects_15_16/')
-#     cntrl.addCohort("16-17", 'CM0645_Projects_16_17/CM0645_Marks_16_17_v2.csv', basedir, 'CM0645_Projects_16_17/')
-#     cntrl.addCohort("17-18", 'CM0645_Projects_17_18/CM0645_Marks_17_18_v4.csv', basedir, 'CM0645_Projects_17_18/')
-# #    cntrl.TagCohorts()
-#     cntrl.BNC.describe()
-#     cntrl.DB.index_filenames()
     gui.main(cntrl)

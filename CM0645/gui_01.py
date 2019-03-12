@@ -7,9 +7,7 @@ import re
 import wx
 import Controller as con
 import Messages as m                    # enums and print related
-
-basedir = '/home/jeremy/Projects-Active/CM0645/' # home version
-#basedir = '/home/izje1/Documents/Projects_Active/CM0645/' # Northumbria verson
+import Settings as S
 
 
 class Example(wx.Frame):

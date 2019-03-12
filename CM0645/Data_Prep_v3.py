@@ -1,28 +1,26 @@
 from os import listdir
-from os.path import isfile, join
+#from os.path import isfile, join
+from pathlib import Path         # python 3 way
 import pandas as pd
 import numpy as np
 import math
 import re
 
+import Settings as S                    # pathnames
 from CM0645db import Db
-import extract_parts as extract_m # re based text extractor
-
-basedir = '/home/jeremy/Projects-Active/CM0645/'
-#basedir = '/home/izje1/Documents/Projects_Active/CM0645/'
-
+import extract_parts_v2 as extract_m # re based text extractor
 
 #The main point of this class is to reconcile the files from the eLP (if any)
 #with the marks and store an entry in the DB if both found
 
 class Cohort:
 
-    def __init__(self, label, marksfile, txtdir, ptxtdir, taggedtxtsdir ):
-        self.marksfile = marksfile      #the file holding csv marks
+    def __init__(self, label, cohortdir, marksfile ):
+        self.marksfile = S.basedir / cohortdir / marksfile      #the file holding csv marks
         self.label = label                 #the label of this cohort eg '15-16'
-        self.txtdir = txtdir               # the source text file
-        self.ptxtdir = ptxtdir               # the processed text directory
-        self.taggeddir = taggedtxtsdir    # the tagged text directory
+        self.txtdir = S.basedir / cohortdir / S.txts               # the source text file
+        self.ptxtdir = S.basedir / cohortdir / S.ptxts               # the processed text directory
+        self.taggeddir = S.basedir / cohortdir / S.taggedtxts    # the tagged text directory
 
 #Get the CSV marks spreadsheet as a pandas dataframe
 #
@@ -34,12 +32,13 @@ class Cohort:
 #need to later equate these to marks
 #
     def get_files(self):
-        onlyfiles = [f for f in listdir(self.txtdir)]
+        p = Path(self.txtdir)
+        onlyfiles = sorted([f for f in p.iterdir() if f.is_file()])
         file_details = dict()
         for file in onlyfiles:
             (firstname, surname) = extract_m.extract_student_name(file) 
             if surname in file_details:          # **HANDLE THIS BETTER! Will lose when surnames duplicates***
-                print("Surname duplicated", surnam)
+                print("Surname duplicated", surname)
             else:
                 file_details[surname.upper()] = (surname, firstname, file) #store in dictionary 
         self.file_details = file_details
@@ -70,7 +69,7 @@ class Cohort:
                     if uid:
                         #db.add_uid(uid, firstnames, surname, self.label, filename, row['Report_Mark'], row['Report_Max'])
                         Report_Percent = (row['Report_Mark'] * 100.0) /row['Report_Max']
-                        uids_data.append([uid, firstnames, surname, self.label, filename, row['Report_Mark'], row['Report_Max'],Report_Percent ])
+                        uids_data.append([uid, firstnames, surname, self.label, filename.name, row['Report_Mark'], row['Report_Max'],Report_Percent ])
                     find_count += 1
             else:
                 pass
@@ -127,25 +126,24 @@ class Cohort:
 # Execute this block  Main Module (standard trick) but not if included as module
 # pay particular attention to the spreadsheet column headers
 if __name__ == '__main__':
-    dbfile = 'CM0645.sqlite'
-    dbfile = basedir + 'CM0645.sqlite'
+    dbfile = S.basedir / S.dbfile
     DB = Db(dbfile)
     #    DB.initialize()
-    # cohort_15_16 = Cohort("15-16", 'CM0645_Projects_15_16/CM0645_Marks_15_16.csv', basedir + 'CM0645_Projects_15_16/txts/')
-    # cohort_15_16.describe(" Container of file details and marks")
-    # cohort_15_16.get_marks()
-    # cohort_15_16.get_files()
-    # cohort_15_16.equate_names_marks(DB)
-    # cohort_16_17 = Cohort("16-17", 'CM0645_Projects_16_17/CM0645_Marks_16_17_v2.csv', basedir + 'CM0645_Projects_16_17/txts/')
-    # cohort_16_17.describe(" Container of file details and marks")
-    # cohort_16_17.get_marks()
-    # cohort_16_17.get_files()
-    # cohort_16_17.equate_names_marks(DB)
-    # cohort_17_18 = Cohort("17-18", 'CM0645_Projects_17_18/CM0645_Marks_17_18_v4.csv', basedir + 'CM0645_Projects_17_18/txts/')
-    # cohort_17_18.describe(" Container of file details and marks")
-    # cohort_17_18.get_marks()
-    # cohort_17_18.get_files()
-    # cohort_17_18.equate_names_marks(DB)
+    cohort_15_16 = Cohort("15-16", S.cohortdir_15_16, S.marksfile_15_16)
+    cohort_15_16.describe(" Container of file details and marks")
+    cohort_15_16.get_marks()
+    cohort_15_16.get_files()
+    cohort_15_16.equate_names_marks(DB)
+    cohort_16_17 = Cohort("16-17", S.cohortdir_16_17, S.marksfile_16_17)
+    cohort_16_17.describe(" Container of file details and marks")
+    cohort_16_17.get_marks()
+    cohort_16_17.get_files()
+    cohort_16_17.equate_names_marks(DB)
+    cohort_17_18 = Cohort("17-18", S.cohortdir_17_18, S.marksfile_17_18)
+    cohort_17_18.describe(" Container of file details and marks")
+    cohort_17_18.get_marks()
+    cohort_17_18.get_files()
+    cohort_17_18.equate_names_marks(DB)
     DB.index_filenames()
     DB.db_close()
 

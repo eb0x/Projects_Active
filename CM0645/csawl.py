@@ -443,4 +443,4 @@ for token in CSAWL.keys():
     if token != "":
         CSAWL_stems[token] = 1
 with open("myCSAWLDict.txt", "wb") as myFile:
-    pickle.dump(CSAWL_stems, myFile)
+    pickle.dump(CSAWL, myFile)  # was CSAW_stems -- if stemming

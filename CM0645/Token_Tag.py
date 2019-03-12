@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from os import listdir
-from os.path import isfile, join
+#from os import listdir
+#from os.path import isfile, join
+from pathlib import Path
 import re
 import sys
 import string
@@ -15,21 +16,16 @@ from nltk.tag import pos_tag_sents, pos_tag
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 
+import Settings as S                    # pathnames
 from CM0645db import Db
 
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 translator = str.maketrans(string.punctuation, ' '*len(string.punctuation)) #map punctuation to space
 stemmer = SnowballStemmer("english")
 
-#if changing the folders, please comment out these lines and add your own
-# it is easier then to swap hosts
-#only last one counts
-#basedir = "/Users/jeremyellman/Documents/Projects_Active/CM0645_15_16/"
-#basedir = "/home/izje1/Documents/Projects_Active/CM0645/"
-basedir = "/home/jeremy/Projects-Active/"
+basedir = str(S.basedir)
 
-outdir = basedir + 'taggedtxts/'
-BNCfile = "BNC.pickle"
+BNCfile = S.BNCfile
 
 
 #utility function from SO gives n sized chunks of list l
@@ -40,6 +36,7 @@ def chunks(l, n):
 
 class TaggedText:
     mybase = ""
+    debug = True
     token_count = 0
     sentences = 0
     word_dict = {}
@@ -48,13 +45,14 @@ class TaggedText:
 
     
     def __init__(self, mypath, Db):
-        self.onlyfiles = [f for f in sorted(listdir(mypath)) if isfile(join(mypath, f))]
+        p = Path(mypath)
+        self.onlyfiles = sorted([f for f in p.iterdir() if f.is_file()])
         self.mybase = mypath
         self.DB = Db
         self.ptag = re.compile('^[A-Z]+$')
-        with open(basedir + "myAWLDict.txt", "rb") as myFile:    #load Academic Word List
+        with open(S.basedir / S.datadir / "myAWLDict.txt", "rb") as myFile:    #load Academic Word List
             self.AWLDictionary = pickle.load(myFile)
-        with open(basedir + "myCSAWLDict.txt", "rb") as myFile2:
+        with open(S.basedir / S.datadir / "myCSAWLDict.txt", "rb") as myFile2:
             self.CSAWLstems = pickle.load(myFile2)
         self.stopWords = set(stopwords.words('english'))
         self.prepare_BNC()
@@ -63,10 +61,7 @@ class TaggedText:
 #prepare the BNC by loading the Pickle of raw frequences then 
 #group into kilo-words. There are 822 of these.
     def prepare_BNC(self):
-        fn = join(basedir, BNCfile)
-        print("BNC File: ", fn)
-
-        BNCdict =  pickle.load(open( fn, "rb" ))
+        BNCdict =  pickle.load(open( S.basedir / S.datadir / S.BNCfile, "rb" ))
         self.BNC = BNCdict
         #Sort by Frequency
         BNC_bv = sorted(BNCdict .items(), key=lambda kv: kv[1])
@@ -95,13 +90,12 @@ class TaggedText:
 #Read the filename content into one variable self.content
 #   
     def process_file(self, filename):
-        fname = self.mybase  + filename
         self.token_count = 0
         self.sentences = 0
         self.word_dict = {}
         self.novel_words = {}
 
-        with open(fname, 'r') as f:
+        with open(filename, 'r', encoding='utf8') as f:
             content = f.read()
             self.sent_tokenize_list = sent_tokenize(content )   #split into sentences         
             self.record_basic_stats(filename, self.sent_tokenize_list)
@@ -136,13 +130,14 @@ class TaggedText:
         self.word_dict = word_dict
         ourTSdict['Rel_BNC'] = self.Calculate_Information_Content(word_dict)
         dictback = self.Calculate_AWL()
-#        ourTSdict['AWL_count'] = dictback['AWL_count']
-#        ourTSdict['CSAWL_count'] = dictback['CSAWL_count']
-#        print("NLTK Results:" , ourTSdict)
+        ourTSdict['AWL_count'] = dictback['AWL_count']
+        ourTSdict['CSAWL_count'] = dictback['CSAWL_count']
+        if self.debug:
+            print("NLTK Results:" , ourTSdict)
         ourTSdict.update(dictback)
-        self.DB.addTextStats(filename, ourTSdict) # takes dictionary of stats and file name
-        print("File: %s, Sents: %d, words: %d, Vocabulary: %d\n" %
-        (filename, sent_count, token_count, len(word_dict)))
+        self.DB.addTextStats(filename.name, ourTSdict) # takes dictionary of stats and file name
+        print("Token Tag, record_basic_stats: File: %s, Sents: %d, words: %d, Vocabulary: %d\n" %
+        (filename.name, sent_count, token_count, len(word_dict)))
 
 #
     def Calculate_Information_Content(self, word_dict):
@@ -168,7 +163,9 @@ class TaggedText:
 #         trying to lose none text lines like headers.
 #
     def process_content(self, filename, outfilename):
-        with open(outfilename, 'w') as the_file:
+        if self.debug:
+            print("process_content {} ==> {}\n".format(filename, outfilename))
+        with open(outfilename, 'w', encoding='utf8') as the_file:
             wr = csv.writer(the_file)
             self.process_PoS(filename, wr)
 
@@ -190,7 +187,7 @@ class TaggedText:
         total = sum(profile.values())       #all the tagged tokens 
         profile2 = {tag: value/total for (tag, value) in profile.items()}
 #        print(profile2)
-        self.DB.addTextStats(filename, profile2)
+        self.DB.addTextStats(filename.name, profile2)
 
 #Calculates AWL and BNC Membership
     def Calculate_AWL(self):
@@ -254,9 +251,9 @@ class TaggedText:
     def process_Dir(self, outdir):
         for file in self.onlyfiles:
             try:
-                if not self.DB.check_processed(file, 'NLTK_sentences'): # expensive op --don't repeat if done
+                if not self.DB.check_processed(file.name, 'NLTK_sentences'): # expensive op --don't repeat if done
                     self.process_file(file)
-                    self.process_content(file, outdir + file)
+                    self.process_content(file, outdir / file.name)
             except Exception as e:
                         print("Token Tag: process_Dir: {} file: {}".format(e, file))
         
@@ -266,22 +263,22 @@ class TaggedText:
     
         
 if __name__ == "__main__":
-    dbfile = 'CM0645.sqlite'
+    dbfile = S.dbfile
    
-    DB = Db(basedir + 'CM0465/' + dbfile)
-    JustOne =  False  #True 
+    DB = Db( S.dbfile)
+    JustOne =  False # True #False
     if JustOne:
-        tagger0 = TaggedText(basedir + 'CM0645_Projects_16_17/' + 'ptxts/', DB)   #tag the extracted texts
+        tagger0 = TaggedText(S.basedir /  S.cohortdir_16_17 / S.ptxts, DB)   #tag the extracted texts
         file1 = tagger0.onlyfiles[165]
         tagger0.process_file(file1)
-        tagger0.process_content(file1, outdir + file1)
+        tagger0.process_content(file1, S.basedir / S.cohortdir_17_18 / S.ptxts / file1)
     else:
-        tagger1 = TaggedText(basedir + 'CM0645_Projects_15_16/' + 'ptxts/', DB)   #tag the extracted texts
-        tagger1.process_Dir(basedir + 'CM0645_Projects_15_16/' + 'taggedtxts/', DB)
-        tagger2 = TaggedText(basedir + 'CM0645_Projects_16_17/' + 'ptxts/', DB)   #tag the extracted texts
-        tagger2.process_Dir(basedir + 'CM0645_Projects_16_17/' + 'taggedtxts/', DB)
-        tagger3 = TaggedText(basedir + 'CM0645_Projects_17_18/' + 'ptxts/', DB)   #tag the extracted texts
-        tagger3.process_Dir(basedir + 'CM0645_Projects_17_18/' + 'taggedtxts/')
+        tagger1 = TaggedText(S.basedir / S.cohortdir_15_16 / S.ptxts, DB)   #tag the extracted texts
+        tagger1.process_Dir(S.basedir / S.cohortdir_15_16 / S.taggedtxts)
+        tagger2 = TaggedText(S.basedir / S.cohortdir_16_17 / S.ptxts, DB)   #tag the extracted texts
+        tagger2.process_Dir(S.basedir / S.cohortdir_16_17 / S.taggedtxts)
+        tagger3 = TaggedText(S.basedir / S.cohortdir_17_18 / S.ptxts, DB)   #tag the extracted texts
+        tagger3.process_Dir(S.basedir / S.cohortdir_17_18 / S.taggedtxts)
     #tagger1.Describe()
 
 
