@@ -63,7 +63,7 @@ class PlainText:
                 # Clean Text to remove/ replace bad_unicode chars, urls, emails, phone nos, and accented character
                 # Boolean for options: fix_unicode, lowercase, no_urls, no_emails, no_phone_numbers, no_numbers, no_currency_symbols, no_punct, no_contractions, no_accents
                 # https://chartbeat-labs.github.io/textacy/api_reference.html#module-textacy.preprocess
-                line = textacy.preprocess_text(line, True, False, True, True, True, False, False, False, False, True)
+                line = textacy.preprocess_text(line, True, False, False, True, False, False, False, False, False, False)
                 line_count += 1
                 if found_TOC:
                     # Find Table of Contents
