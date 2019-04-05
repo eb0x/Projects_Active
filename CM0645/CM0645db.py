@@ -18,7 +18,7 @@ import Settings as S
 # Comment each feature FTW and NB SQL Comment Sysntax
 
 raw = '''CREATE TABLE IF NOT EXISTS raw (
-filename TEXT PRIMARY KEY,  
+Filename TEXT PRIMARY KEY,  
 first_name TEXT NOT NULL,              
 last_name TEXT NOT NULL,
 cohort TEXT NOT NULL,
@@ -31,7 +31,7 @@ uid integer PRIMARY KEY,               -- UNN userID
 first_name TEXT NOT NULL,              
 last_name TEXT NOT NULL,
 cohort TEXT NOT NULL,
-filename TEXT NOT NULL,                -- full path to file txt
+Filename TEXT NOT NULL,                -- full path to file txt
 Report_Mark  REAL default 0,           -- the actual project mark as normalised percent
 Report_Max INTEGER default 0,
 Report_Percent REAL default 0,
@@ -100,7 +100,57 @@ ent_percent REAL default 0, -- Percentage, including "%".
 ent_money REAL default 0, -- Monetary values, including unit.
 ent_quantity REAL default 0, -- Measurements, as of weight or distance.
 ent_ordinal REAL default 0, -- "first", "second", etc.
-ent_cardinal REAL default 0 -- Numerals that do not fall under another type.
+ent_cardinal REAL default 0, -- Numerals that do not fall under another type.
+adjacent_overlap_cw_sent REAL default 0,
+adjacent_overlap_cw_sent_div_seg REAL default 0,
+adjacent_overlap_binary_cw_sent	REAL default 0,
+adjacent_overlap_verb_sent REAL default 0,
+adjacent_overlap_verb_sent_div_seg REAL default 0,
+adjacent_overlap_binary_verb_sent REAL default 0,
+adjacent_overlap_argument_sent REAL default 0,
+adjacent_overlap_argument_sent_div_seg REAL default 0,
+adjacent_overlap_binary_argument_sent REAL default 0,
+lsa_1_all_sent REAL default 0,
+lsa_2_all_sent REAL default 0,
+lsa_1_all_para REAL default 0,
+lsa_2_all_para REAL default 0,
+lda_1_all_sent REAL default 0,
+lda_2_all_sent REAL default 0,
+lda_1_all_para REAL default 0,
+lda_2_all_para REAL default 0,
+word2vec_1_all_sent REAL default 0,
+word2vec_2_all_sent REAL default 0,
+word2vec_1_all_para REAL default 0,
+word2vec_2_all_para REAL default 0,
+basic_connectives REAL default 0,
+conjunctions REAL default 0,
+disjunctions REAL default 0,
+lexical_subordinators REAL default 0,
+coordinating_conjuncts REAL default 0,
+addition REAL default 0,
+sentence_linking REAL default 0,
+'order' REAL default 0,
+reason_and_purpose REAL default 0,
+all_causal REAL default 0,
+positive_causal REAL default 0,
+opposition REAL default 0,
+determiners REAL default 0,
+all_demonstratives REAL default 0,
+attended_demonstratives REAL default 0,
+unattended_demonstratives REAL default 0,
+all_additive REAL default 0,
+all_logical REAL default 0,
+positive_logical REAL default 0,
+negative_logical REAL default 0,
+all_temporal REAL default 0,
+positive_intentional REAL default 0,
+all_positive REAL default 0,
+all_negative REAL default 0,
+all_connective REAL default 0,
+pronoun_density REAL default 0,
+pronoun_noun_ratio REAL default 0,
+repeated_content_lemmas REAL default 0,
+repeated_content_and_pronoun_lemmas REAL default 0
 );'''
 
 
@@ -136,7 +186,7 @@ class Db:
         try:
             Report_Percent = (Report_Mark * 100.0) /Report_Max
             cursor = self.conn.cursor()
-            cursor.execute('''INSERT OR REPLACE INTO projects(uid, first_name, last_name, cohort, filename, Report_Mark, Report_Max, Report_Percent)
+            cursor.execute('''INSERT OR REPLACE INTO projects(uid, first_name, last_name, cohort, Filename, Report_Mark, Report_Max, Report_Percent)
                   VALUES(?,?,?,?,?,?,?,?)''', (uid, first_name, last_name, cohort, filename, Report_Mark, Report_Max, Report_Percent))
             self.conn.commit()
         except sqlite3.Error as e:
@@ -151,7 +201,7 @@ class Db:
         try:
             cursor = self.conn.cursor()
 #            cursor.execute("BEGIN TRANSACTION;")
-            sql = '''INSERT OR REPLACE INTO projects(uid, first_name, last_name, cohort, filename, Report_Mark, Report_Max, Report_Percent)
+            sql = '''INSERT OR REPLACE INTO projects(uid, first_name, last_name, cohort, Filename, Report_Mark, Report_Max, Report_Percent)
                   VALUES(?,?,?,?,?,?,?,?)'''
             cursor.executemany(sql, uids_data)
             cursor.execute("COMMIT;")
@@ -165,7 +215,7 @@ class Db:
     def add_file(self, filename, first_name, last_name, cohort,  raw_lines, extracted_lines):
         try:
             cursor = self.conn.cursor()
-            cursor.execute('''INSERT OR REPLACE INTO raw(filename, first_name, last_name, cohort,  raw_lines, extracted_lines)
+            cursor.execute('''INSERT OR REPLACE INTO raw(Filename, first_name, last_name, cohort,  raw_lines, extracted_lines)
                   VALUES(?,?,?,?,?,?)''', (filename, first_name, last_name, cohort,  raw_lines, extracted_lines))
             self.conn.commit()
         except sqlite3.Error as e:
@@ -180,7 +230,7 @@ class Db:
         try:
             cursor = self.conn.cursor()
 #            cursor.execute("BEGIN TRANSACTION;")
-            sql = '''INSERT OR REPLACE INTO raw(filename, first_name, last_name, cohort,  raw_lines, extracted_lines) VALUES(?,?,?,?,?,?)'''
+            sql = '''INSERT OR REPLACE INTO raw(Filename, first_name, last_name, cohort,  raw_lines, extracted_lines) VALUES(?,?,?,?,?,?)'''
             cursor.executemany(sql, files_data)
             cursor.execute("COMMIT;")
           #  self.conn.commit()
@@ -196,7 +246,7 @@ class Db:
 #        print("TS_dict", TS_dict)
         cols = [key + "=" + str(value) + "," for (key, value) in TS_dict.items()]
         sql = 'UPDATE projects SET ' + ' '.join(map(str, cols))
-        sql2 = sql[:-1] + ' WHERE filename=?'
+        sql2 = sql[:-1] + ' WHERE Filename=?'
         print("addTextStats::Query: ", sql2)
         try:
             cursor = self.conn.cursor()
@@ -211,7 +261,7 @@ class Db:
     # to avoid reprocessing data in db. If recalc is really needed, zero db.
     #
     def check_processed(self, filename, column):
-        sql = '''SELECT {} from projects where filename=?;'''.format(column)
+        sql = '''SELECT {} from projects where Filename=?;'''.format(column)
 #        print("check_unprocessed: SQL:\n{}".format(sql))
         cur = self.conn.cursor()
         Found = False
@@ -236,7 +286,7 @@ class Db:
         cur = self.conn.cursor()
         try:
             cur.execute("DROP INDEX tag_titles;")
-            cur.execute("CREATE INDEX tag_titles ON projects(filename);")
+            cur.execute("CREATE INDEX tag_titles ON projects(Filename);")
             self.conn.commit()
         except Exception as e:
             self.logerror("Exception in _query: %s" % e)         

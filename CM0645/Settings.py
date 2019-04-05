@@ -20,6 +20,7 @@ cohortdir_17_18 = 'CM0645_Projects_17_18/'
 txts='txts/'
 ptxts = 'ptxts/'
 taggedtxts = 'taggedtxts/'
+taacoresultfile = 'TAACO/result/results.csv';
 
 datadir = 'data/'
 
