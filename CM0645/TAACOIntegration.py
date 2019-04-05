@@ -13,6 +13,7 @@ dbfile = basedir / S.dbfile
 
 class TAACO:
     def __init__(self, Db, resultfile):
+        # TAACO results.csv in TAACO/results/ directory under the cohorts folder
         self.taacofile = S.basedir / resultfile  # TAACO results csv file
         self.DB = Db
         self.loadResultFile();
@@ -34,12 +35,14 @@ class TAACO:
             # Retain only original projects table columns 1-68 [Filename, Scores, Textacy Features, etc]
             only_projects = projectdata.iloc[:, 0:68]
             # Merge original data in db with Pandas of TAACO results: Key Filename
-            project_and_taaco = pd.merge(only_projects, taacodata, on='Filename')
+            project_and_taaco = pd.merge(only_projects, taacodata, on='Filename', how='left')
 
             # Optional: Export the full current structure of the projects table to file
             # project_and_taaco.to_csv('export.csv', index=False)
 
             # Replace existing projects table with newly merged records
+            # Notice: TAACO results must be full for all cohorts and records in the datasbase, if not,
+            # the records without a TAACO result will be lost due to the replace
             project_and_taaco.to_sql('projects', DB.conn, if_exists='replace', index=False)
 
         except Exception as e:
