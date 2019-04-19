@@ -4,7 +4,7 @@ from pathlib import Path
 import re
 import sys
 import time
-
+import textacy
 
 import Settings as S                    # pathnames
 import CM0645db as Db_m         # Db_m  = DB Module
@@ -60,7 +60,10 @@ class PlainText:
             line_count = 0
             lines_written = 0 
             for line in self.content:
-                #line = line.rstrip()
+                # Clean Text to remove/ replace bad_unicode chars, urls, emails, phone nos, and accented character
+                # Boolean for options: fix_unicode, lowercase, no_urls, no_emails, no_phone_numbers, no_numbers, no_currency_symbols, no_punct, no_contractions, no_accents
+                # https://chartbeat-labs.github.io/textacy/api_reference.html#module-textacy.preprocess
+                line = textacy.preprocess_text(line, True, False, True, True, True, False, False, False, False, True)
                 line_count += 1
                 if found_TOC:
                     # Find Table of Contents
@@ -117,11 +120,11 @@ class PlainText:
                 if group: 
                     cohort  = group.group(1)
                 self.process_file(afile)
-                (line_count, lines_written ) = self.process_content(outdir / afile)
+                (line_count, lines_written ) = self.process_content(outdir / afile.name)
                 #self.DB.add_file(afile,  firstname, surname, cohort,  line_count, lines_written )
                 files_data.append([afile.name,  firstname, surname, cohort,  line_count, lines_written ])
             except Exception as e:
-                        print("Extract parts: Process Error in {}, reason: {}".format(afile, e))
+                        print("Extract parts: Process Error in {}, reason: {}".format(afile.name, e))
         print("Length File Data {}".format(len(files_data)))
         self.DB.add_files(files_data)
 

@@ -12,8 +12,15 @@ import csv
 import pickle
 import matplotlib
 
+<<<<<<< HEAD
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
+=======
+import matplotlib.pylab as plt
+from matplotlib import pyplot
+from pandas.plotting import scatter_matrix
+import seaborn as sns
+>>>>>>> 2310682bc1ff26ebee92a904d8b661827757dcc3
 
 from sklearn import preprocessing
 from sklearn.preprocessing import MinMaxScaler
@@ -49,11 +56,17 @@ class Data_Clean:
     def DataFramesRemoveBlank(self, df):
         #https://stackoverflow.com/questions/21164910/delete-column-in-pandas-if-it-is-all-zeros
         ndf = df.loc[:, (df != 0).any(axis=0)]
+<<<<<<< HEAD
         # Drop a row by condition
         ndf2 = ndf[df.AWL_count != 0]
         #remove other nearly empty cols or with minimal data
         #ndf2 = ndf.drop(['tag_LS', 'tag_SYM', 'tag_NNPS', 'tag_UH', 'tag_D'], axis=1)
         return ndf2
+=======
+        #remove other nearly empty cols or with minimal data - no longer exist
+        #ndf2 = ndf.drop(['tag_LS', 'tag_SYM', 'tag_NNPS', 'tag_UH', 'tag_D'], axis=1)
+        return ndf
+>>>>>>> 2310682bc1ff26ebee92a904d8b661827757dcc3
        
   #generic normalizer/scaler  assumes all cols numeric
   # #   
@@ -67,6 +80,17 @@ class Data_Clean:
         # Remove Outliers
         ndf = df[(np.abs(stats.zscore( df)) < 4).all(axis=1)]
         return ndf
+
+    def CorrelationsToCSV(self, cdf):
+        # Get numeric fields and clean data
+        nbDF = self.DataFramesRemoveBlank(cdf);
+        normDF = self.NormDataFrames(nbDF);
+
+        # Convert Dataframe to Pandas
+        dfPD = pd.DataFrame(data=normDF)
+        # Get Correlations (pearson) and write to csv
+        corr = dfPD.corr(method='pearson')
+        corr.to_csv('norm_correlations.csv')
 
 #normalize scale starting at somecol
     def NormSingleDF(self, adf, fromcol=1):
@@ -96,6 +120,11 @@ if __name__ == "__main__":
     DB = Db(dbfile)
     DC = Data_Clean(DB)
     DC.getProjectDataFrames()
+
+    # Extract Linear Correlations to CSV
+    DC.CorrelationsToCSV(DC.df100a)
+
+    # Other post-processing
     df90b = DC.DataFramesRemoveBlank(DC.df90a)
     df90c = DC.NormDataFrames(df90b)
     df90c.to_csv("testout.csv")

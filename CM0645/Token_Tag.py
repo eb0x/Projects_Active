@@ -163,7 +163,7 @@ class TaggedText:
 #         trying to lose none text lines like headers.
 #
     def process_content(self, filename, outfilename):
-        if debug:
+        if self.debug:
             print("process_content {} ==> {}\n".format(filename, outfilename))
         with open(outfilename, 'w', encoding='utf8') as the_file:
             wr = csv.writer(the_file)
@@ -266,7 +266,7 @@ if __name__ == "__main__":
     dbfile = S.dbfile
    
     DB = Db( S.dbfile)
-    JustOne =  True # True #False
+    JustOne =  False # True #False
     if JustOne:
         tagger0 = TaggedText(S.basedir /  S.cohortdir_16_17 / S.ptxts, DB)   #tag the extracted texts
         file1 = tagger0.onlyfiles[165]

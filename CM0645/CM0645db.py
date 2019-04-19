@@ -82,7 +82,25 @@ PUNCT  REAL default 0,
 SPACE  REAL default 0,
 SYM  REAL default 0,
 VERB  REAL default 0,
-X  REAL default 0
+X  REAL default 0,
+ent_person REAL default 0, -- People, including fictional.
+ent_norp REAL default 0, -- Nationalities or religious or political groups.
+ent_fac REAL default 0, -- Buildings, airports, highways, bridges, etc.
+ent_org REAL default 0, -- Companies, agencies, institutions, etc.
+ent_gpe REAL default 0, -- Countries, cities, states.
+ent_loc REAL default 0, -- Non-GPE locations, mountain ranges, bodies of water.
+ent_product REAL default 0, -- Objects, vehicles, foods, etc. (Not services.)
+ent_event REAL default 0, -- Named hurricanes, battles, wars, sports events, etc.
+ent_work_of_art REAL default 0, -- Titles of books, songs, etc.
+ent_law REAL default 0, -- Named documents made into laws.
+ent_language REAL default 0, -- Any named language.
+ent_date REAL default 0, -- Absolute or relative dates or periods.
+ent_time REAL default 0, -- Times smaller than a day.
+ent_percent REAL default 0, -- Percentage, including "%".
+ent_money REAL default 0, -- Monetary values, including unit.
+ent_quantity REAL default 0, -- Measurements, as of weight or distance.
+ent_ordinal REAL default 0, -- "first", "second", etc.
+ent_cardinal REAL default 0 -- Numerals that do not fall under another type.
 );'''
 
 
