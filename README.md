@@ -4,4 +4,4 @@ This project analyzed BSc student project dissertations to investigate whether t
 
 There is some value in the manual processing of larger texts, so making this public.
 
-Readers should note that there is a preprocessed version on the British National Corpus saved as a pickle file. This is a lightweight method determining if words are legitamate English (up to 1998).
+Readers should note that there is a preprocessed version on the British National Corpus saved as a pickle file. This is a lightweight method to determine if whether words are legitimite English (up to 1998).
